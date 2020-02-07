@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	dcopy "github.com/otiai10/copy"
 )
@@ -61,6 +62,40 @@ func OpenBundle(path string) (*Bundle, error) {
 	}
 
 	return bundle, nil
+}
+
+func (b *Bundle) Images() ([]string, error) {
+	seen := make(map[string]bool)
+
+	// assume manifests live in `app/manifests`
+	manifestsPath := filepath.Join(b.Path, "app", "manifests")
+	entries, err := ioutil.ReadDir(manifestsPath)
+	if err != nil {
+		return nil, fmt.Errorf("read manifests dir %q: %w", manifestsPath, err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		manifestPath := filepath.Join(manifestsPath, entry.Name())
+		images, err := ContainerImages(manifestPath)
+		if err != nil {
+			return nil, fmt.Errorf("find container images for %q: %w", manifestPath, err)
+		}
+
+		fmt.Printf("Images in %s: [%s]\n", entry.Name(), strings.Join(images, ","))
+		for i := range images {
+			seen[images[i]] = true
+		}
+	}
+
+	var list []string
+	for k := range seen {
+		list = append(list, k)
+	}
+
+	return list, nil
 }
 
 // Bundle writes archive to disk.

@@ -2,10 +2,9 @@ package sheaf
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"path/filepath"
-	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // CreateConfig is configuration for Create.
@@ -26,26 +25,12 @@ func Create(config CreateConfig) error {
 		}
 	}()
 
-	// assume manifests live in `app/manifests`
-	manifestsPath := filepath.Join(config.Path, "app", "manifests")
-	entries, err := ioutil.ReadDir(manifestsPath)
+	images, err := bundle.Images()
 	if err != nil {
-		return fmt.Errorf("read manifests dir %q: %w", manifestsPath, err)
+		return fmt.Errorf("collect images from manifest: %w", err)
 	}
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
 
-		manifestPath := filepath.Join(manifestsPath, entry.Name())
-		images, err := ContainerImages(manifestPath)
-		if err != nil {
-			return fmt.Errorf("find container images for %q: %w", manifestPath, err)
-		}
-
-		fmt.Printf("Images in %s: [%s]\n", entry.Name(), strings.Join(images, ","))
-
-	}
+	spew.Dump(images)
 
 	if err := bundle.Write(); err != nil {
 		return fmt.Errorf("write bundle archive: %w", err)
