@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 )
 
 const (
@@ -34,4 +35,8 @@ func LoadBundleConfig(filename string) (BundleConfig, error) {
 	}
 
 	return bc, nil
+}
+
+func (bc *BundleConfig) Filename(dir string) string {
+	return filepath.Join(dir, fmt.Sprintf("%s-%s.tar.gz", bc.Name, bc.Version))
 }
