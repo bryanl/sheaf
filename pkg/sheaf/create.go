@@ -3,6 +3,7 @@ package sheaf
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 )
@@ -14,10 +15,16 @@ type CreateConfig struct {
 
 // Create creates a bundle.
 func Create(config CreateConfig) error {
-	bundle, err := LoadBundle(config.Path)
+	bundle, err := OpenBundle(config.Path)
 	if err != nil {
 		return fmt.Errorf("load bundle: %w", err)
 	}
+
+	defer func() {
+		if cErr := bundle.Close(); cErr != nil {
+			log.Printf("unable to close bundle: %v", err)
+		}
+	}()
 
 	// assume manifests live in `app/manifests`
 	manifestsPath := filepath.Join(config.Path, "app", "manifests")
