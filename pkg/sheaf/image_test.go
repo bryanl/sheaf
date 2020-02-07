@@ -44,7 +44,7 @@ func TestContainers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			manifestPath := filepath.Join("testdata", tt.path)
 
-			got, err := Containers(manifestPath)
+			got, err := ContainerImages(manifestPath)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

@@ -10,22 +10,22 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// Containers returns containers in manifest path
-func Containers(manifestPath string) ([]string, error) {
+// ContainerImages returns containers in manifest path
+func ContainerImages(manifestPath string) ([]string, error) {
 	data, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
-		return nil, fmt.Errorf("read file %q: %w", manifestPath, err)
+		return nil, fmt.Errorf("read file: %w", err)
 	}
 
 	var m map[string]interface{}
 
 	if err := yaml.Unmarshal(data, &m); err != nil {
-		return nil, fmt.Errorf("decode manifest %q: %w", manifestPath, err)
+		return nil, fmt.Errorf("decode manifest: %w", err)
 	}
 
 	j := jsonpath.New("parser")
 	if err := j.Parse("{range ..spec.containers[*]}{.image}{','}{end}"); err != nil {
-		return nil, fmt.Errorf("unable to parse JSON in %q: %w", manifestPath, err)
+		return nil, fmt.Errorf("unable to parse: %w", err)
 	}
 
 	var buf bytes.Buffer
