@@ -5,61 +5,37 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/docker/docker/pkg/archive"
+)
+
+var (
+	tarOptions = &archive.TarOptions{
+		Compression:      archive.Gzip,
+		IncludeFiles:     []string{"."},
+		IncludeSourceDir: true,
+		NoLchown:         true,
+	}
 )
 
 // Archive creates a gzipped tar archive. Assume src is a directory.
 func Archive(src string, w io.Writer) error {
-	zipWriter := gzip.NewWriter(w)
-	tarWriter := tar.NewWriter(zipWriter)
-
-	prefix := filepath.Dir(src)
-
-	// walk through source
-	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// generate tar header
-		header, err := tar.FileInfoHeader(fi, file)
-		if err != nil {
-			return err
-		}
-
-		// must provide real name
-		header.Name = filepath.ToSlash(strings.TrimPrefix(file, prefix))
-
-		// write header
-		if err := tarWriter.WriteHeader(header); err != nil {
-			return err
-		}
-		// if not a dir, write file content
-		if !fi.IsDir() {
-			data, err := os.Open(file)
-			if err != nil {
-				return err
-			}
-			if _, err := io.Copy(tarWriter, data); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-
+	export, err := archive.TarWithOptions(src, tarOptions)
 	if err != nil {
-		return fmt.Errorf("walk source: %w", err)
+		return fmt.Errorf("create tar ball: %w", err)
 	}
+	defer func() {
+		if cErr := export.Close(); cErr != nil {
+			log.Printf("close tar ball: %v", err)
+		}
+	}()
 
-	// create tar
-	if err := tarWriter.Close(); err != nil {
-		return fmt.Errorf("create tar: %w", err)
-	}
-
-	if err := zipWriter.Close(); err != nil {
-		return fmt.Errorf("create zip: %w", err)
+	if _, err := io.Copy(w, export); err != nil {
+		return fmt.Errorf("write tar ball: %w", err)
 	}
 
 	return nil

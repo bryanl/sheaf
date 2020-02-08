@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
+	"github.com/deislabs/duffle/pkg/imagestore"
 	dcopy "github.com/otiai10/copy"
 )
 
@@ -17,6 +19,8 @@ type Bundle struct {
 	Path string
 	// Config is the BundleConfig for the bundle.
 	Config BundleConfig
+	// Store is the image store
+	Store imagestore.Store
 
 	// tmpDir for temporary things.
 	tmpDir string
@@ -55,13 +59,26 @@ func OpenBundle(path string) (*Bundle, error) {
 		return nil, fmt.Errorf("stage bundle: %w", err)
 	}
 
+	store, err := ocilayout.Create(setStoreLocation(root))
+	if err != nil {
+		return nil, fmt.Errorf("create image store: %w", err)
+	}
+
 	bundle := &Bundle{
 		Path:   root,
 		Config: bundleConfig,
+		Store:  store,
 		tmpDir: tmpDir,
 	}
 
 	return bundle, nil
+}
+
+func setStoreLocation(archiveDir string) imagestore.Option {
+	return func(parameters imagestore.Parameters) imagestore.Parameters {
+		parameters.ArchiveDir = archiveDir
+		return parameters
+	}
 }
 
 func (b *Bundle) Images() ([]string, error) {

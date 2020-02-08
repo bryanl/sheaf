@@ -3,8 +3,6 @@ package sheaf
 import (
 	"fmt"
 	"log"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 // CreateConfig is configuration for Create.
@@ -30,7 +28,12 @@ func Create(config CreateConfig) error {
 		return fmt.Errorf("collect images from manifest: %w", err)
 	}
 
-	spew.Dump(images)
+	for _, ref := range images {
+		fmt.Printf("Adding %s to bundle\n", ref)
+		if _, err := bundle.Store.Add(ref); err != nil {
+			return fmt.Errorf("add %s: %w", ref, err)
+		}
+	}
 
 	if err := bundle.Write(); err != nil {
 		return fmt.Errorf("write bundle archive: %w", err)
