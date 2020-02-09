@@ -38,5 +38,5 @@ func LoadBundleConfig(filename string) (BundleConfig, error) {
 }
 
 func (bc *BundleConfig) Filename(dir string) string {
-	return filepath.Join(dir, fmt.Sprintf("%s-%s.tar.gz", bc.Name, bc.Version))
+	return filepath.Join(dir, fmt.Sprintf("%s-%s.tgz", bc.Name, bc.Version))
 }

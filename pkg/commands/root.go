@@ -10,11 +10,14 @@ func NewRootCommand() *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	cmd.AddCommand(NewCreateCommand())
+	cmd.AddCommand(
+		NewCreateCommand(),
+		NewStageCommand())
 
 	return cmd
 }
 
+// Execute executes the root command for sheaf.
 func Execute() error {
 	root := NewRootCommand()
 	if err := root.Execute(); err != nil {

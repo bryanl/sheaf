@@ -74,6 +74,26 @@ func OpenBundle(path string) (*Bundle, error) {
 	return bundle, nil
 }
 
+// ImportBundle imports a bundle from an archive. It unpacks the bundle to a temporary
+// directory.
+func ImportBundle(archivePath, unpackDir string) (*Bundle, error) {
+	source, err := os.Open(archivePath)
+	if err != nil {
+		return nil, fmt.Errorf("open: %w", err)
+	}
+	defer func() {
+		if cErr := source.Close(); cErr != nil {
+			log.Printf("unable to close %s: %v", archivePath, err)
+		}
+	}()
+
+	if err := Unarchive(source, unpackDir); err != nil {
+		return nil, fmt.Errorf("unpack bundle: %w", err)
+	}
+
+	return OpenBundle(unpackDir)
+}
+
 func setStoreLocation(archiveDir string) imagestore.Option {
 	return func(parameters imagestore.Parameters) imagestore.Parameters {
 		parameters.ArchiveDir = archiveDir
@@ -81,6 +101,8 @@ func setStoreLocation(archiveDir string) imagestore.Option {
 	}
 }
 
+// Images returns images present in containers specified in manifests in the bundle.
+// Images are found by searching for pod spec and iterating over the containers.
 func (b *Bundle) Images() ([]string, error) {
 	seen := make(map[string]bool)
 

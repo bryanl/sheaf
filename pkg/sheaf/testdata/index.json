@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 2,
+  "manifests": [
+    {
+      "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
+      "size": 1412,
+      "digest": "sha256:ad5552c786f128e389a0263104ae39f3d3c7895579d45ae716f528185b36bc6f",
+      "annotations": {
+        "org.opencontainers.image.ref.name": "docker.io/library/nginx:1.17"
+      }
+    }
+  ]
+}

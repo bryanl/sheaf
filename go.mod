@@ -4,13 +4,15 @@ go 1.13
 
 require (
 	github.com/cnabio/duffle v0.0.0-20200203090343-fb912c3c874f
+	github.com/davecgh/go-spew v1.1.1
 	github.com/deislabs/duffle v0.0.0-20200203090343-fb912c3c874f
 	github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492 // indirect
+	github.com/docker/distribution v2.7.0+incompatible
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/otiai10/copy v1.0.2
-	github.com/pivotal/image-relocation v0.0.0-20200106101616-e3aed6f58c00 // indirect
+	github.com/pivotal/image-relocation v0.0.0-20200106101616-e3aed6f58c00
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.4.0

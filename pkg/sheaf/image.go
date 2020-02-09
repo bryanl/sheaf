@@ -1,54 +1,36 @@
 package sheaf
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"strings"
-
-	"k8s.io/client-go/util/jsonpath"
-	"sigs.k8s.io/yaml"
 )
 
-// ContainerImages returns containers in manifest path
-func ContainerImages(manifestPath string) ([]string, error) {
-	data, err := ioutil.ReadFile(manifestPath)
+type ManifestList struct {
+	SchemaVersion int     `json:"schemaVersion"`
+	Manifests     []Image `json:"manifests"`
+}
+
+type Image struct {
+	MediaType   string            `json:"mediaType"`
+	Size        int               `json:"size"`
+	Digest      string            `json:"digest"`
+	Annotations map[string]string `json:"annotations"`
+}
+
+func LoadFromIndex(indexPath string) ([]Image, error) {
+	data, err := ioutil.ReadFile(indexPath)
 	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
+		return nil, fmt.Errorf("read index: %w", err)
 	}
 
-	var m map[string]interface{}
+	fmt.Println(indexPath)
+	fmt.Println(string(data))
 
-	if err := yaml.Unmarshal(data, &m); err != nil {
+	var list ManifestList
+	if err := json.Unmarshal(data, &list); err != nil {
 		return nil, fmt.Errorf("decode manifest: %w", err)
 	}
 
-	j := jsonpath.New("parser")
-	if err := j.Parse("{range ..spec.containers[*]}{.image}{','}{end}"); err != nil {
-		return nil, fmt.Errorf("unable to parse: %w", err)
-	}
-
-	var buf bytes.Buffer
-	if err := j.Execute(&buf, m); err != nil {
-		// jsonpath doesn't return a helpful error, so looking at the error message
-		if strings.Contains(err.Error(), "is not found") {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("search manifest for containers: %w", err)
-	}
-
-	containers := strings.Split(buf.String(), ",")
-	return compactStringSlice(containers), nil
-}
-
-// compactStringSlice removes empty elements from a string slice.
-func compactStringSlice(sl []string) []string {
-	var out []string
-	for i := range sl {
-		if sl[i] != "" {
-			out = append(out, sl[i])
-		}
-	}
-
-	return out
+	return list.Manifests, nil
 }
