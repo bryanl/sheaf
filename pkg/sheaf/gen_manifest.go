@@ -73,7 +73,8 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 		return err
 	}
 
-	for _, fi := range entries {
+	for i := range entries {
+		fi := entries[i]
 		if fi.IsDir() {
 			continue
 		}
@@ -82,6 +83,12 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 		data, err := ioutil.ReadFile(manifestPath)
 		if err != nil {
 			return err
+		}
+
+		if i > 0 {
+			if _, err := fmt.Fprintln(w, "---"); err != nil {
+				return err
+			}
 		}
 
 		if _, err := fmt.Fprintln(w, string(bytes.TrimSpace(data))); err != nil {

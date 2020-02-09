@@ -26,7 +26,6 @@ func NewGenManifestCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mg := sheaf.NewManifestGenerator(
 				sheaf.ManifestGeneratorArchivePath(args[0]),
-				sheaf.ManifestGeneratorArchivePath(args[0]),
 				sheaf.ManifestGeneratorPrefix(prefix))
 			return mg.Generate(os.Stdout)
 		},
