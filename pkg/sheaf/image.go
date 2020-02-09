@@ -24,9 +24,6 @@ func LoadFromIndex(indexPath string) ([]Image, error) {
 		return nil, fmt.Errorf("read index: %w", err)
 	}
 
-	fmt.Println(indexPath)
-	fmt.Println(string(data))
-
 	var list ManifestList
 	if err := json.Unmarshal(data, &list); err != nil {
 		return nil, fmt.Errorf("decode manifest: %w", err)

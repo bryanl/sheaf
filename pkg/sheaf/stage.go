@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
 )
@@ -92,8 +91,7 @@ func Stage(config StageConfig) error {
 			return fmt.Errorf("create relocated image name: %w", err)
 		}
 
-		spew.Dump(imageDigest, newImageName)
-
+		fmt.Printf("relocating %s to %s\n", imageName.String(), newImageName.String())
 		if err := layout.Push(imageDigest, newImageName); err != nil {
 			return fmt.Errorf("push %s: %w", newImageName.String(), err)
 		}
