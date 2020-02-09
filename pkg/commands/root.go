@@ -12,7 +12,8 @@ func NewRootCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		NewPackCommand(),
-		NewStageCommand())
+		NewStageCommand(),
+		NewGenManifestCommand())
 
 	return cmd
 }

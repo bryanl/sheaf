@@ -37,6 +37,7 @@ func LoadBundleConfig(filename string) (BundleConfig, error) {
 	return bc, nil
 }
 
+// Filename returns the bundle archive file name for this BundleConfig.
 func (bc *BundleConfig) Filename(dir string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s-%s.tgz", bc.Name, bc.Version))
 }

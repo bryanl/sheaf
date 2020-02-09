@@ -101,29 +101,47 @@ func setStoreLocation(archiveDir string) imagestore.Option {
 	}
 }
 
-// Images returns images present in containers specified in manifests in the bundle.
-// Images are found by searching for pod spec and iterating over the containers.
-func (b *Bundle) Images() ([]string, error) {
-	seen := make(map[string]bool)
-
-	// assume manifests live in `app/manifests`
+// Manifests returns paths to manifests contained in the bundle.
+// It assumes manifests live in `app/manifests`.
+func (b *Bundle) Manifests() ([]string, error) {
 	manifestsPath := filepath.Join(b.Path, "app", "manifests")
 	entries, err := ioutil.ReadDir(manifestsPath)
 	if err != nil {
 		return nil, fmt.Errorf("read manifests dir %q: %w", manifestsPath, err)
 	}
+
+	var list []string
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
 
 		manifestPath := filepath.Join(manifestsPath, entry.Name())
+		list = append(list, manifestPath)
+	}
+
+	return list, nil
+}
+
+// Images returns images present in containers specified in manifests in the bundle.
+// Images are found by searching for pod spec and iterating over the containers.
+func (b *Bundle) Images() ([]string, error) {
+	seen := make(map[string]bool)
+
+	manifestPaths, err := b.Manifests()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, manifestPath := range manifestPaths {
 		images, err := ContainerImages(manifestPath)
 		if err != nil {
 			return nil, fmt.Errorf("find container images for %q: %w", manifestPath, err)
 		}
 
-		fmt.Printf("Images in %s: [%s]\n", entry.Name(), strings.Join(images, ","))
+		fmt.Printf("Images in %s: [%s]\n",
+			filepath.Base(manifestPath), strings.Join(images, ","))
 		for i := range images {
 			seen[images[i]] = true
 		}
@@ -158,6 +176,7 @@ func (b *Bundle) Write() error {
 	return nil
 }
 
+// Close closes the bundle and cleans up temporary files.
 func (b *Bundle) Close() error {
 	if err := os.RemoveAll(b.tmpDir); err != nil {
 		return fmt.Errorf("remove temporary directory")

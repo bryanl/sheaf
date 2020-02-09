@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 )
 
+// ManifestList is a docker manifest list.
 type ManifestList struct {
 	SchemaVersion int     `json:"schemaVersion"`
 	Manifests     []Image `json:"manifests"`
 }
 
+// Image represents a docker image.
 type Image struct {
 	MediaType   string            `json:"mediaType"`
 	Size        int               `json:"size"`
@@ -18,6 +20,12 @@ type Image struct {
 	Annotations map[string]string `json:"annotations"`
 }
 
+// RefName returns the ref name for the image.
+func (i *Image) RefName() string {
+	return i.Annotations["org.opencontainers.image.ref.name"]
+}
+
+// LoadFromIndex loads images from a manifest list.
 func LoadFromIndex(indexPath string) ([]Image, error) {
 	data, err := ioutil.ReadFile(indexPath)
 	if err != nil {

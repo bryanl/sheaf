@@ -63,7 +63,7 @@ func Unarchive(src io.Reader, dst string) error {
 
 		// validate name against path traversal
 		if !validRelPath(header.Name) {
-			return fmt.Errorf("tar contained invalid name error %q\n", header.Name)
+			return fmt.Errorf("tar contained invalid name error %q", header.Name)
 		}
 
 		// add dst + re-format slashes according to system

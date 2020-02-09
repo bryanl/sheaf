@@ -76,7 +76,7 @@ func Stage(config StageConfig) error {
 	}
 
 	for i := range images {
-		refName := images[i].Annotations["org.opencontainers.image.ref.name"]
+		refName := images[i].RefName()
 		imageName, err := image.NewName(refName)
 		if err != nil {
 			return fmt.Errorf("create image name for ref %q: %w", refName, err)
