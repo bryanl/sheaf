@@ -5,13 +5,13 @@ import (
 	"log"
 )
 
-// CreateConfig is configuration for Create.
-type CreateConfig struct {
+// PackConfig is configuration for Pack.
+type PackConfig struct {
 	Path string
 }
 
-// Create creates a bundle.
-func Create(config CreateConfig) error {
+// Pack packs a bundle.
+func Pack(config PackConfig) error {
 	bundle, err := OpenBundle(config.Path)
 	if err != nil {
 		return fmt.Errorf("load bundle: %w", err)
