@@ -42,10 +42,17 @@ func Stage(config StageConfig) error {
 		}
 	}
 
-	// TODO: split this up. unarchive and then open bundle
-	bundle, err := ImportBundle(config.ArchivePath, unpackDir)
+	unpacker := NewUnpacker(
+		UnpackerArchivePath(config.ArchivePath),
+		UnpackerDest(unpackDir))
+
+	if err := unpacker.Unpack(); err != nil {
+		return fmt.Errorf("unpack bundle: %w", err)
+	}
+
+	bundle, err := OpenBundle(unpackDir)
 	if err != nil {
-		return fmt.Errorf("import bundle from %q: %w", config.ArchivePath, err)
+		return fmt.Errorf("open bundle: %w", err)
 	}
 
 	defer func() {
@@ -54,7 +61,7 @@ func Stage(config StageConfig) error {
 		}
 	}()
 
-	layoutPath := filepath.Join(bundle.Path, "artifacts", "layout")
+	layoutPath := filepath.Join(unpackDir, "artifacts", "layout")
 	indexPath := filepath.Join(layoutPath, "index.json")
 
 	images, err := LoadFromIndex(indexPath)
@@ -62,11 +69,7 @@ func Stage(config StageConfig) error {
 		return fmt.Errorf("read artifact layout index: %w", err)
 	}
 
-	spew.Dump(images)
-
 	registryClient := ggcr.NewRegistryClient()
-
-	fmt.Println("layoutPath", layoutPath)
 
 	layout, err := registryClient.ReadLayout(layoutPath)
 	if err != nil {
