@@ -58,7 +58,7 @@ func TestContainers(t *testing.T) {
 			name: "multi",
 			path: "multi.yaml",
 			expected: []string{
-				"nginx:",
+				"nginx:1.17.8",
 			},
 		},
 	}
