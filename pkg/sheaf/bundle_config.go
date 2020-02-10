@@ -10,6 +10,8 @@ import (
 const (
 	// BundleConfigFilename is the filename for a bundle config.
 	BundleConfigFilename = "bundle.json"
+
+	bundleConfigDefaultVersion = "0.1.0"
 )
 
 // BundleConfig is a bundle configuration.
@@ -20,6 +22,19 @@ type BundleConfig struct {
 	Version string `json:"version"`
 	// SchemaVersion is the version of the schema this bundle uses.
 	SchemaVersion string `json:"schemaVersion"`
+}
+
+// NewBundleConfig creates a BundleConfig.
+func NewBundleConfig(name, version string) BundleConfig {
+	if version == "" {
+		version = bundleConfigDefaultVersion
+	}
+
+	return BundleConfig{
+		Name:          name,
+		Version:       version,
+		SchemaVersion: "v1alpha1",
+	}
 }
 
 // LoadBundleConfig loads a BundleConfig from a file.
