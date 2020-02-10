@@ -9,6 +9,8 @@ Features:
 * relocate images in a bundle archive to another registry
 * generate manifests contained in a bundle archive
 
+[![asciicast](https://asciinema.org/a/yNVzkkpsVsUjT2jvSidfeqVHz.svg)](https://asciinema.org/a/yNVzkkpsVsUjT2jvSidfeqVHz)
+
 ## Getting started
 
 This tool **IS A POC** (mistakes will be made)
