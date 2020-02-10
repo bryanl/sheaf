@@ -9,6 +9,11 @@ Features:
 * relocate images in a bundle archive to another registry
 * generate manifests contained in a bundle archive
 
+Limitations:
+
+* detect images only in pod specs
+* replace images globally in manifests
+
 [![asciicast](https://asciinema.org/a/yNVzkkpsVsUjT2jvSidfeqVHz.svg)](https://asciinema.org/a/yNVzkkpsVsUjT2jvSidfeqVHz)
 
 ## Getting started
