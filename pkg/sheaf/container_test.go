@@ -58,7 +58,7 @@ func TestContainers(t *testing.T) {
 			name: "multi",
 			path: "multi.yaml",
 			expected: []string{
-				"nginx:",
+				"k8s.gcr.io/nginx-slim:0.8",
 			},
 		},
 	}
