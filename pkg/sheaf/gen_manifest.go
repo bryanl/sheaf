@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/pivotal/image-relocation/pkg/image"
 )
 
 // ManifestGeneratorOption is an option for configuring ManifestGenerator.
@@ -83,6 +85,32 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 		data, err := ioutil.ReadFile(manifestPath)
 		if err != nil {
 			return err
+		}
+
+		if mg.Prefix != "" {
+			images, err := ContainerImages(manifestPath)
+			if err != nil {
+				return err
+			}
+
+			imageMap := make(map[string]string)
+			for _, img := range images {
+				imageName, err := image.NewName(img)
+				if err != nil {
+					return err
+				}
+				newImageName, err := FlattenRepoPathPreserveTagDigest(mg.Prefix, imageName)
+				if err != nil {
+					return err
+				}
+				imageMap[img] = newImageName.String()
+			}
+
+			for k := range imageMap {
+				oldImage := fmt.Sprintf("image: %s", k)
+				newImage := fmt.Sprintf("image: %s", imageMap[k])
+				data = bytes.Replace(data, []byte(oldImage), []byte(newImage), -1)
+			}
 		}
 
 		if i > 0 {
