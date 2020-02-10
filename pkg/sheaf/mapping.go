@@ -74,6 +74,7 @@ func FlattenRepoPath(repoPrefix string, originalImage image.Name) (image.Name, e
 	} else {
 		mp = mappedPath(repoPrefix, fp, hash)
 	}
+
 	mn, err := image.NewName(mp)
 	if err != nil {
 		panic(err) // should not happen
