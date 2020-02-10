@@ -38,6 +38,13 @@ func TestContainers(t *testing.T) {
 			path:     "service.yaml",
 			expected: nil,
 		},
+		{
+			name: "multi",
+			path: "multi.yaml",
+			expected: []string{
+				"nginx:",
+			},
+		},
 	}
 
 	for _, tt := range tests {
