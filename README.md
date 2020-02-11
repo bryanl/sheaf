@@ -33,6 +33,12 @@ Initial a sheaf project:
 * create a bundle configuration
 * create a manifests directory
 
+### Add Manifests to Bundle
+
+Repeat the following for each manifest (or pass multiple `-f` switches):
+
+`sheaf add-manifest -f <manifest path or URL>`
+
 ### Package Bundle
 
 `sheaf pack <directory> <archive path>`
