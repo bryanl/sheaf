@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 
 	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/pivotal/image-relocation/pkg/pathmapping"
 	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
 )
 
@@ -102,7 +103,7 @@ func Stage(config StageConfig) error {
 			return fmt.Errorf("find image digest for ref %q: %w", refName, err)
 		}
 
-		newImageName, err := FlattenRepoPathPreserveTagDigest(config.RegistryPrefix, imageName)
+		newImageName, err := pathmapping.FlattenRepoPathPreserveTagDigest(config.RegistryPrefix, imageName)
 		if err != nil {
 			return fmt.Errorf("create relocated image name: %w", err)
 		}

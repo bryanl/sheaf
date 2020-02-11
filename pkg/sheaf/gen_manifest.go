@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 
 	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/pivotal/image-relocation/pkg/pathmapping"
 )
 
 // ManifestGeneratorOption is an option for configuring ManifestGenerator.
@@ -115,7 +116,7 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 				if err != nil {
 					return err
 				}
-				newImageName, err := FlattenRepoPathPreserveTagDigest(mg.Prefix, imageName)
+				newImageName, err := pathmapping.FlattenRepoPathPreserveTagDigest(mg.Prefix, imageName)
 				if err != nil {
 					return err
 				}

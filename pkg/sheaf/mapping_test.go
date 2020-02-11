@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/pivotal/image-relocation/pkg/pathmapping"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +51,7 @@ func TestFlattenRepoPathPreserveTagDigest(t *testing.T) {
 			imageName, err := image.NewName(tt.imageName)
 			require.NoError(t, err)
 
-			got, err := FlattenRepoPathPreserveTagDigest(tt.prefix, imageName)
+			got, err := pathmapping.FlattenRepoPathPreserveTagDigest(tt.prefix, imageName)
 			if tt.wantError {
 				require.Error(t, err)
 				return
