@@ -52,7 +52,7 @@ Repeat the following for each image (or pass multiple `-i` switches):
 
 `sheaf pack <bundle directory> <archive path>`
 
-Create an archive of `<bundle directory>` with all the images referenced in the manifests.
+Create an archive of `<bundle directory>` with any images found by scanning the manifests together with any listed in `bundle.json`.
 
 ### Stage Bundle
 

@@ -18,6 +18,7 @@ package sheaf
 
 import (
 	"fmt"
+	"sort"
 )
 
 // ImageAdder adds images to a bundle.
@@ -64,6 +65,9 @@ func union(a []string, b []string) []string {
 	for i := range uniq {
 		imgs = append(imgs, i)
 	}
+
+	// Enforce a deterministic ordering, e.g for testing and repeatable building.
+	sort.Strings(imgs)
 
 	return imgs
 }
