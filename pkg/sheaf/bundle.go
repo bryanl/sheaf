@@ -42,27 +42,38 @@ type Bundle struct {
 	tmpDir string
 }
 
-// OpenBundle loads a bundle. Call Bundle.Close() to ensure workspace is cleaned up.
-func OpenBundle(path string) (*Bundle, error) {
+func loadBundleConfig(path string) (BundleConfig, string, error) {
+	bundleConfig := BundleConfig{}
+
 	// check if directory exists
 	fi, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("bundle directory %q does not exist", path)
+			return bundleConfig, "", fmt.Errorf("bundle directory %q does not exist", path)
 		}
 
-		return nil, err
+		return bundleConfig, "", err
 	}
 
 	if !fi.IsDir() {
-		return nil, fmt.Errorf("%q is not a directory", path)
+		return bundleConfig, "", fmt.Errorf("%q is not a directory", path)
 	}
 
 	bundleConfigFilename := filepath.Join(path, BundleConfigFilename)
 
-	bundleConfig, err := LoadBundleConfig(bundleConfigFilename)
+	bundleConfig, err = LoadBundleConfig(bundleConfigFilename)
 	if err != nil {
-		return nil, fmt.Errorf("load bundle config: %w", err)
+		return bundleConfig, "", fmt.Errorf("load bundle config: %w", err)
+	}
+
+	return bundleConfig, bundleConfigFilename, err
+}
+
+// OpenBundle loads a bundle. Call Bundle.Close() to ensure workspace is cleaned up.
+func OpenBundle(path string) (*Bundle, error) {
+	bundleConfig, _, err := loadBundleConfig(path)
+	if err != nil {
+		return nil, err
 	}
 
 	tmpDir, err := ioutil.TempDir("", "sheaf")
@@ -140,8 +151,8 @@ func (b *Bundle) Manifests() ([]string, error) {
 	return list, nil
 }
 
-// Images returns images present in containers specified in manifests in the bundle.
-// Images are found by searching for pod spec and iterating over the containers.
+// Images returns images declared in the bundle config or present in manifests in the bundle.
+// Images are found in manifests by searching for pod specs and iterating over the containers.
 func (b *Bundle) Images() ([]string, error) {
 	seen := make(map[string]bool)
 
@@ -168,7 +179,7 @@ func (b *Bundle) Images() ([]string, error) {
 		list = append(list, k)
 	}
 
-	return list, nil
+	return union(list, b.Config.Images), nil
 }
 
 // Bundle writes archive to disk.
