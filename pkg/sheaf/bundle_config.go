@@ -38,6 +38,8 @@ type BundleConfig struct {
 	Version string `json:"version"`
 	// SchemaVersion is the version of the schema this bundle uses.
 	SchemaVersion string `json:"schemaVersion"`
+	// Images is a list of images required by the bundle.
+	Images []string `json:"images"`
 }
 
 // NewBundleConfig creates a BundleConfig.
@@ -66,6 +68,16 @@ func LoadBundleConfig(filename string) (BundleConfig, error) {
 	}
 
 	return bc, nil
+}
+
+// StoreBundleConfig saves a BundleConfig to a file, destructively.
+func StoreBundleConfig(bc BundleConfig, filename string) error {
+	jbc, err := json.Marshal(bc)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filename, jbc, 0644)
 }
 
 // Filename returns the bundle archive file name for this BundleConfig.

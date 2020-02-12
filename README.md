@@ -11,7 +11,7 @@ Features:
 
 Limitations:
 
-* detect images only in pod specs
+* detect images only in pod specs (apart from any added using `sheaf add-image`)
 * replace images globally in manifests
 
 [![asciicast](https://asciinema.org/a/yNVzkkpsVsUjT2jvSidfeqVHz.svg)](https://asciinema.org/a/yNVzkkpsVsUjT2jvSidfeqVHz)
@@ -26,7 +26,7 @@ This tool **IS A POC** (mistakes will be made)
 
 ### Initialize Bundle
 
-`sheaf init <directory>`
+`sheaf init <bundle directory>`
 
 Initial a sheaf project:
 * create the directory if it does not exist, 
@@ -37,13 +37,22 @@ Initial a sheaf project:
 
 Repeat the following for each manifest (or pass multiple `-f` switches):
 
-`sheaf add-manifest -f <manifest path or URL>`
+`sheaf add-manifest <bundle directory> -f <manifest path or URL>`
+
+### Add Extra Images to Bundle
+
+This is only necessary for images that `sheaf` can't find by scanning manifests, but it won't
+do any harm if you add an image that can be found.
+
+Repeat the following for each image (or pass multiple `-i` switches):
+
+`sheaf add-image <bundle directory> -i <image>`
 
 ### Package Bundle
 
-`sheaf pack <directory> <archive path>`
+`sheaf pack <bundle directory> <archive path>`
 
-Create an archive of `<directory>` with all the images referenced in the manifests.
+Create an archive of `<bundle directory>` with all the images referenced in the manifests.
 
 ### Stage Bundle
 
@@ -55,4 +64,5 @@ Stage the images located in the archive to a new registry with `<prefix>`. Image
 
 `sheaf gen-manifest <archive path> [--prefix=<prefix>]`
 
-Generate manifests stored in the archive to stdout. If `<prefix>`, the images in the manifests will be rewritten to the prefixed location. 
+Generate manifests stored in the archive to stdout. If `<prefix>`, the images in the manifests will be
+rewritten to the prefixed location. 
