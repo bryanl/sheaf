@@ -154,7 +154,7 @@ func (b *Bundle) Manifests() ([]string, error) {
 // Images returns images declared in the bundle config together with any present in manifests in the bundle.
 // Images are found in manifests by searching for pod specs and iterating over the containers.
 func (b *Bundle) Images() ([]string, error) {
-	seen := make(map[string]bool)
+	seen := []string{}
 
 	manifestPaths, err := b.Manifests()
 	if err != nil {
@@ -167,19 +167,18 @@ func (b *Bundle) Images() ([]string, error) {
 			return nil, fmt.Errorf("find container images for %q: %w", manifestPath, err)
 		}
 
-		fmt.Printf("Images in %s: [%s]\n",
-			filepath.Base(manifestPath), strings.Join(images, ","))
-		for i := range images {
-			seen[images[i]] = true
-		}
+		printImageList(filepath.Base(manifestPath), images)
+
+		seen = union(seen, images)
 	}
 
-	var list []string
-	for k := range seen {
-		list = append(list, k)
-	}
+	printImageList(BundleConfigFilename, b.Config.Images)
 
-	return union(list, b.Config.Images), nil
+	return union(seen, b.Config.Images), nil
+}
+
+func printImageList(source string, images []string) {
+	fmt.Printf("Images in %s: [%s]\n", source, strings.Join(images, ","))
 }
 
 // Bundle writes archive to disk.
