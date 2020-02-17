@@ -23,12 +23,13 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/pivotal/image-relocation/pkg/image"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/util/jsonpath"
 )
 
-// ContainerImages returns containers in manifest path
-func ContainerImages(manifestPath string) ([]string, error) {
+// ContainerImages returns images from containers in manifest path
+func ContainerImages(manifestPath string) ([]image.Name, error) {
 	data, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
 		return nil, fmt.Errorf("read file: %w", err)
@@ -37,7 +38,7 @@ func ContainerImages(manifestPath string) ([]string, error) {
 	r := bytes.NewReader(data)
 	decoder := yaml.NewYAMLOrJSONDecoder(r, 4096)
 
-	containerMap := make(map[string]bool)
+	images := []image.Name{}
 
 	for {
 		var m map[string]interface{}
@@ -62,17 +63,22 @@ func ContainerImages(manifestPath string) ([]string, error) {
 			return nil, fmt.Errorf("search manifest for containers: %w", err)
 		}
 
-		for _, s := range strings.Split(buf.String(), ",") {
-			if s != "" {
-				containerMap[s] = true
-			}
+		bufImages, err := imagesFromStrings(filterEmpty(strings.Split(buf.String(), ",")))
+		if err != nil {
+			return nil, err
+		}
+		images = union(images, bufImages)
+	}
+
+	return images, nil
+}
+
+func filterEmpty(ss []string) []string {
+	result := []string{}
+	for _, s := range ss {
+		if s != "" {
+			result = append(result, s)
 		}
 	}
-
-	var list []string
-	for k := range containerMap {
-		list = append(list, k)
-	}
-
-	return list, nil
+	return result
 }

@@ -17,21 +17,19 @@
 package sheaf
 
 import (
-	"bytes"
-	"fmt"
+	"sort"
 
 	"github.com/pivotal/image-relocation/pkg/image"
 )
 
-func replaceImage(manifest []byte, oldImage image.Name, newImage image.Name) []byte {
-	for _, oi := range oldImage.Synonyms() {
-		old := fmt.Sprintf("image: %s", oi.String())
-		new := fmt.Sprintf("image: %s", newImage.String())
-		manifest = bytes.Replace(manifest, []byte(old), []byte(new), -1)
+// imageSlice attaches the methods of sort.Interface to []image.Name, sorting in increasing string order.
+type imageSlice []image.Name
 
-		old = fmt.Sprintf("image: %q", oi.String())
-		new = fmt.Sprintf("image: %q", newImage.String())
-		manifest = bytes.Replace(manifest, []byte(old), []byte(new), -1)
-	}
-	return manifest
-}
+func (p imageSlice) Len() int           { return len(p) }
+func (p imageSlice) Less(i, j int) bool { return p[i].String() < p[j].String() }
+func (p imageSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// Sort is a convenience method.
+func (p imageSlice) Sort() { sort.Sort(p) }
+
+func sortImages(a []image.Name) { imageSlice(a).Sort() }

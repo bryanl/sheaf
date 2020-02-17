@@ -110,17 +110,13 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 				return err
 			}
 
-			imageMap := make(map[string]string)
+			imageMap := make(map[image.Name]image.Name)
 			for _, img := range images {
-				imageName, err := image.NewName(img)
+				newImageName, err := pathmapping.FlattenRepoPathPreserveTagDigest(mg.Prefix, img)
 				if err != nil {
 					return err
 				}
-				newImageName, err := pathmapping.FlattenRepoPathPreserveTagDigest(mg.Prefix, imageName)
-				if err != nil {
-					return err
-				}
-				imageMap[img] = newImageName.String()
+				imageMap[img] = newImageName
 			}
 
 			for k := range imageMap {

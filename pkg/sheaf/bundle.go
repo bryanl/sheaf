@@ -27,6 +27,7 @@ import (
 	"github.com/cnabio/duffle/pkg/imagestore"
 	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
 	dcopy "github.com/otiai10/copy"
+	"github.com/pivotal/image-relocation/pkg/image"
 )
 
 // Bundle represents a bundle
@@ -153,8 +154,8 @@ func (b *Bundle) Manifests() ([]string, error) {
 
 // Images returns images declared in the bundle config together with any present in manifests in the bundle.
 // Images are found in manifests by searching for pod specs and iterating over the containers.
-func (b *Bundle) Images() ([]string, error) {
-	seen := []string{}
+func (b *Bundle) Images() ([]image.Name, error) {
+	seen := []image.Name{}
 
 	manifestPaths, err := b.Manifests()
 	if err != nil {
@@ -172,13 +173,38 @@ func (b *Bundle) Images() ([]string, error) {
 		seen = union(seen, images)
 	}
 
-	printImageList(BundleConfigFilename, b.Config.Images)
+	bundleImages, err := imagesFromStrings(b.Config.Images)
+	if err != nil {
+		return nil, err
+	}
 
-	return union(seen, b.Config.Images), nil
+	printImageList(BundleConfigFilename, bundleImages)
+
+	return union(seen, bundleImages), nil
 }
 
-func printImageList(source string, images []string) {
-	fmt.Printf("Images in %s: [%s]\n", source, strings.Join(images, ","))
+func printImageList(source string, images []image.Name) {
+	fmt.Printf("Images in %s: [%s]\n", source, strings.Join(imageStrings(images), ","))
+}
+
+func imageStrings(names []image.Name) []string {
+	result := []string{}
+	for _, name := range names {
+		result = append(result, name.String())
+	}
+	return result
+}
+
+func imagesFromStrings(ss []string) ([]image.Name, error) {
+	result := []image.Name{}
+	for _, s := range ss {
+		name, err := image.NewName(s)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, name)
+	}
+	return result, nil
 }
 
 // Bundle writes archive to disk.
