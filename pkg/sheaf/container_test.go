@@ -61,6 +61,13 @@ func TestContainers(t *testing.T) {
 				"nginx:1.17.8",
 			},
 		},
+		{
+			name: "quoted",
+			path: "quoted.yaml",
+			expected: []string{
+				"quay.io/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a",
+			},
+		},
 	}
 
 	for _, tt := range tests {
