@@ -22,12 +22,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
+	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/cnabio/duffle/pkg/imagestore"
 	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
 	dcopy "github.com/otiai10/copy"
-	"github.com/pivotal/image-relocation/pkg/image"
 )
 
 // Bundle represents a bundle
@@ -154,57 +153,37 @@ func (b *Bundle) Manifests() ([]string, error) {
 
 // Images returns images declared in the bundle config together with any present in manifests in the bundle.
 // Images are found in manifests by searching for pod specs and iterating over the containers.
-func (b *Bundle) Images() ([]image.Name, error) {
-	seen := []image.Name{}
+func (b *Bundle) Images() (images.Set, error) {
+	seen := images.Empty
 
 	manifestPaths, err := b.Manifests()
 	if err != nil {
-		return nil, err
+		return images.Empty, err
 	}
 
 	for _, manifestPath := range manifestPaths {
-		images, err := ContainerImages(manifestPath)
+		imgs, err := ContainerImages(manifestPath)
 		if err != nil {
-			return nil, fmt.Errorf("find container images for %q: %w", manifestPath, err)
+			return images.Empty, fmt.Errorf("find container images for %q: %w", manifestPath, err)
 		}
 
-		printImageList(filepath.Base(manifestPath), images)
+		printImageList(filepath.Base(manifestPath), imgs)
 
-		seen = union(seen, images)
+		seen = seen.Union(imgs)
 	}
 
-	bundleImages, err := imagesFromStrings(b.Config.Images)
+	bundleImages, err := images.New(b.Config.Images)
 	if err != nil {
-		return nil, err
+		return images.Empty, err
 	}
 
 	printImageList(BundleConfigFilename, bundleImages)
 
-	return union(seen, bundleImages), nil
+	return seen.Union(bundleImages), nil
 }
 
-func printImageList(source string, images []image.Name) {
-	fmt.Printf("Images in %s: [%s]\n", source, strings.Join(imageStrings(images), ","))
-}
-
-func imageStrings(names []image.Name) []string {
-	result := []string{}
-	for _, name := range names {
-		result = append(result, name.String())
-	}
-	return result
-}
-
-func imagesFromStrings(ss []string) ([]image.Name, error) {
-	result := []image.Name{}
-	for _, s := range ss {
-		name, err := image.NewName(s)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, name)
-	}
-	return result, nil
+func printImageList(source string, imgs images.Set) {
+	fmt.Printf("Images in %s: %v\n", source, imgs)
 }
 
 // Bundle writes archive to disk.

@@ -19,7 +19,7 @@ package sheaf
 import (
 	"fmt"
 
-	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/bryanl/sheaf/pkg/images"
 )
 
 // ImageAdder adds images to a bundle.
@@ -41,7 +41,7 @@ func NewImageAdder(bundlePath string) (*ImageAdder, error) {
 
 // Add adds a list of images to the bundle manifest.
 func (ia *ImageAdder) Add(imageStrs []string) error {
-	images, err := imagesFromStrings(imageStrs)
+	im, err := images.New(imageStrs)
 	if err != nil {
 		return err
 	}
@@ -51,33 +51,11 @@ func (ia *ImageAdder) Add(imageStrs []string) error {
 		return err
 	}
 
-	bundleImages, err := imagesFromStrings(bc.Images)
+	bundleImages, err := images.New(bc.Images)
 	if err != nil {
 		return err
 	}
-	bc.Images = imageStrings(union(bundleImages, images))
+	bc.Images = bundleImages.Union(im).Strings()
 
 	return StoreBundleConfig(bc, bcPath)
-}
-
-func union(a []image.Name, b []image.Name) []image.Name {
-	uniq := map[image.Name]struct{}{}
-
-	for _, i := range a {
-		uniq[i] = struct{}{}
-	}
-
-	for _, i := range b {
-		uniq[i] = struct{}{}
-	}
-
-	imgs := []image.Name{}
-	for i := range uniq {
-		imgs = append(imgs, i)
-	}
-
-	// Enforce a deterministic ordering, e.g for testing and repeatable building.
-	sortImages(imgs)
-
-	return imgs
 }

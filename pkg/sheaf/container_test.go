@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/stretchr/testify/require"
 )
 
@@ -81,7 +82,7 @@ func TestContainers(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			expected, err := imagesFromStrings(tt.expected)
+			expected, err := images.New(tt.expected)
 			require.NoError(t, err)
 			require.Equal(t, expected, got)
 		})
