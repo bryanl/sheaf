@@ -24,8 +24,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cnabio/duffle/pkg/imagestore"
 	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
-	"github.com/deislabs/duffle/pkg/imagestore"
 	dcopy "github.com/otiai10/copy"
 )
 
