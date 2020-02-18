@@ -124,9 +124,7 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 			}
 
 			for k := range imageMap {
-				oldImage := fmt.Sprintf("image: %s", k)
-				newImage := fmt.Sprintf("image: %s", imageMap[k])
-				data = bytes.Replace(data, []byte(oldImage), []byte(newImage), -1)
+				data = replaceImage(data, k, imageMap[k])
 			}
 		}
 
