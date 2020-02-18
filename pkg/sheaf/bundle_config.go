@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/bryanl/sheaf/pkg/images"
 )
 
 const (
@@ -38,8 +40,8 @@ type BundleConfig struct {
 	Version string `json:"version"`
 	// SchemaVersion is the version of the schema this bundle uses.
 	SchemaVersion string `json:"schemaVersion"`
-	// Images is a list of images required by the bundle.
-	Images []string `json:"images"`
+	// Images is a set of images required by the bundle.
+	Images images.Set `json:"images"`
 }
 
 // NewBundleConfig creates a BundleConfig.

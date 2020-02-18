@@ -172,14 +172,9 @@ func (b *Bundle) Images() (images.Set, error) {
 		seen = seen.Union(imgs)
 	}
 
-	bundleImages, err := images.New(b.Config.Images)
-	if err != nil {
-		return images.Empty, err
-	}
+	printImageList(BundleConfigFilename, b.Config.Images)
 
-	printImageList(BundleConfigFilename, bundleImages)
-
-	return seen.Union(bundleImages), nil
+	return seen.Union(b.Config.Images), nil
 }
 
 func printImageList(source string, imgs images.Set) {

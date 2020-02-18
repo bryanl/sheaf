@@ -17,6 +17,7 @@
 package images
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -94,4 +95,31 @@ func (s Set) Strings() []string {
 // String returns a sorted, string representation of the set.
 func (s Set) String() string {
 	return fmt.Sprintf("[%s]", strings.Join(s.Strings(), ","))
+}
+
+// MarshalJSON encodes this Set as a JSON array of image referenced.
+func (s Set) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Strings())
+}
+
+// UnmarshalJSON decodes a JSON array of image references into a Set.
+func (s *Set) UnmarshalJSON(data []byte) error {
+	var v interface{}
+	json.Unmarshal(data, &v)
+	refs, ok := v.([]interface{})
+	if !ok {
+		return fmt.Errorf("unmarshalled data not a slice: %v", v)
+	}
+
+	strs := []string{}
+	for _, ref := range refs {
+		x, ok := ref.(string)
+		if !ok {
+			return fmt.Errorf("unmarshalled slice contains a value which is not a string: %v", x)
+		}
+		strs = append(strs, x)
+	}
+	var err error
+	*s, err = New(strs)
+	return err
 }

@@ -51,11 +51,7 @@ func (ia *ImageAdder) Add(imageStrs []string) error {
 		return err
 	}
 
-	bundleImages, err := images.New(bc.Images)
-	if err != nil {
-		return err
-	}
-	bc.Images = bundleImages.Union(im).Strings()
+	bc.Images = bc.Images.Union(im)
 
 	return StoreBundleConfig(bc, bcPath)
 }
