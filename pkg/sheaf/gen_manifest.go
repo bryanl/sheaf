@@ -119,9 +119,7 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 				imageMap[img] = newImageName
 			}
 
-			for k := range imageMap {
-				data = replaceImage(data, k, imageMap[k])
-			}
+			data = replaceImage(data, imageMap)
 		}
 
 		if i > 0 {
