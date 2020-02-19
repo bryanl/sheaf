@@ -18,7 +18,8 @@ package sheaf
 
 import (
 	"fmt"
-	"sort"
+
+	"github.com/bryanl/sheaf/pkg/images"
 )
 
 // ImageAdder adds images to a bundle.
@@ -39,35 +40,18 @@ func NewImageAdder(bundlePath string) (*ImageAdder, error) {
 }
 
 // Add adds a list of images to the bundle manifest.
-func (ia *ImageAdder) Add(images []string) error {
+func (ia *ImageAdder) Add(imageStrs []string) error {
+	im, err := images.New(imageStrs)
+	if err != nil {
+		return err
+	}
+
 	bc, bcPath, err := loadBundleConfig(ia.BundlePath)
 	if err != nil {
 		return err
 	}
 
-	bc.Images = union(bc.Images, images)
+	bc.Images = bc.Images.Union(im)
 
 	return StoreBundleConfig(bc, bcPath)
-}
-
-func union(a []string, b []string) []string {
-	uniq := map[string]struct{}{}
-
-	for _, i := range a {
-		uniq[i] = struct{}{}
-	}
-
-	for _, i := range b {
-		uniq[i] = struct{}{}
-	}
-
-	imgs := []string{}
-	for i := range uniq {
-		imgs = append(imgs, i)
-	}
-
-	// Enforce a deterministic ordering, e.g for testing and repeatable building.
-	sort.Strings(imgs)
-
-	return imgs
 }

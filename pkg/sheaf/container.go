@@ -23,21 +23,22 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/bryanl/sheaf/pkg/images"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/util/jsonpath"
 )
 
-// ContainerImages returns containers in manifest path
-func ContainerImages(manifestPath string) ([]string, error) {
+// ContainerImages returns images from containers in manifest path
+func ContainerImages(manifestPath string) (images.Set, error) {
 	data, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
+		return images.Empty, fmt.Errorf("read file: %w", err)
 	}
 
 	r := bytes.NewReader(data)
 	decoder := yaml.NewYAMLOrJSONDecoder(r, 4096)
 
-	containerMap := make(map[string]bool)
+	imgs := images.Empty
 
 	for {
 		var m map[string]interface{}
@@ -45,12 +46,12 @@ func ContainerImages(manifestPath string) ([]string, error) {
 			if err == io.EOF {
 				break
 			}
-			return nil, fmt.Errorf("decode failed: %w", err)
+			return images.Empty, fmt.Errorf("decode failed: %w", err)
 		}
 
 		j := jsonpath.New("parser")
 		if err := j.Parse("{range ..spec.containers[*]}{.image}{','}{end}"); err != nil {
-			return nil, fmt.Errorf("unable to parse: %w", err)
+			return images.Empty, fmt.Errorf("unable to parse: %w", err)
 		}
 
 		var buf bytes.Buffer
@@ -59,20 +60,25 @@ func ContainerImages(manifestPath string) ([]string, error) {
 			if strings.Contains(err.Error(), "is not found") {
 				continue
 			}
-			return nil, fmt.Errorf("search manifest for containers: %w", err)
+			return images.Empty, fmt.Errorf("search manifest for containers: %w", err)
 		}
 
-		for _, s := range strings.Split(buf.String(), ",") {
-			if s != "" {
-				containerMap[s] = true
-			}
+		bufImages, err := images.New(filterEmpty(strings.Split(buf.String(), ",")))
+		if err != nil {
+			return images.Empty, err
+		}
+		imgs = imgs.Union(bufImages)
+	}
+
+	return imgs, nil
+}
+
+func filterEmpty(ss []string) []string {
+	result := []string{}
+	for _, s := range ss {
+		if s != "" {
+			result = append(result, s)
 		}
 	}
-
-	var list []string
-	for k := range containerMap {
-		list = append(list, k)
-	}
-
-	return list, nil
+	return result
 }

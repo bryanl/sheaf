@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,6 +41,13 @@ func TestReplaceImage(t *testing.T) {
 			expectedPath: "deployment-replaced.yaml",
 		},
 		{
+			name:         "synonym",
+			path:         "deployment-synonym.yaml",
+			oldImage:     "nginx:1.7.9",
+			newImage:     "example.com/nginx:1.7.9",
+			expectedPath: "deployment-replaced.yaml",
+		},
+		{
 			name:         "quoted",
 			path:         "quoted.yaml",
 			oldImage:     "quay.io/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a",
@@ -51,7 +59,14 @@ func TestReplaceImage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest := readTestData(tt.path, t)
-			updatedManifest := string(replaceImage(manifest, tt.oldImage, tt.newImage))
+
+			oldImage, err := image.NewName(tt.oldImage)
+			require.NoError(t, err)
+
+			newImage, err := image.NewName(tt.newImage)
+			require.NoError(t, err)
+
+			updatedManifest := string(replaceImage(manifest, oldImage, newImage))
 			expectedManifest := string(readTestData(tt.expectedPath, t))
 
 			require.Equal(t, expectedManifest, updatedManifest)

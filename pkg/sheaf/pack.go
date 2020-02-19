@@ -39,14 +39,14 @@ func Pack(config PackConfig) error {
 		}
 	}()
 
-	images, err := bundle.Images()
+	imgs, err := bundle.Images()
 	if err != nil {
 		return fmt.Errorf("collect images from manifest: %w", err)
 	}
 
-	for _, ref := range images {
+	for _, ref := range imgs.Slice() {
 		fmt.Printf("Adding %s to bundle\n", ref)
-		if _, err := bundle.Store.Add(ref); err != nil {
+		if _, err := bundle.Store.Add(ref.String()); err != nil {
 			return fmt.Errorf("add %s: %w", ref, err)
 		}
 	}

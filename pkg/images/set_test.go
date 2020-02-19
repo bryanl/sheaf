@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package sheaf
+package images_test
 
 import (
-	"bytes"
-	"fmt"
+	"testing"
 
-	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/bryanl/sheaf/pkg/images"
+	"github.com/stretchr/testify/require"
 )
 
-func replaceImage(manifest []byte, oldImage image.Name, newImage image.Name) []byte {
-	for _, oi := range oldImage.Synonyms() {
-		old := fmt.Sprintf("image: %s", oi.String())
-		new := fmt.Sprintf("image: %s", newImage.String())
-		manifest = bytes.Replace(manifest, []byte(old), []byte(new), -1)
+func TestMarshalling(t *testing.T) {
+	s, err := images.New([]string{"a", "b"})
+	require.NoError(t, err)
 
-		old = fmt.Sprintf("image: %q", oi.String())
-		new = fmt.Sprintf("image: %q", newImage.String())
-		manifest = bytes.Replace(manifest, []byte(old), []byte(new), -1)
-	}
-	return manifest
+	sb, err := s.MarshalJSON()
+	require.NoError(t, err)
+
+	var u images.Set
+	err = (&u).UnmarshalJSON(sb)
+	require.NoError(t, err)
+
+	require.Equal(t, s, u)
 }

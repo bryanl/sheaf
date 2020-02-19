@@ -22,8 +22,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
+	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/cnabio/duffle/pkg/imagestore"
 	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
 	dcopy "github.com/otiai10/copy"
@@ -153,32 +153,32 @@ func (b *Bundle) Manifests() ([]string, error) {
 
 // Images returns images declared in the bundle config together with any present in manifests in the bundle.
 // Images are found in manifests by searching for pod specs and iterating over the containers.
-func (b *Bundle) Images() ([]string, error) {
-	seen := []string{}
+func (b *Bundle) Images() (images.Set, error) {
+	seen := images.Empty
 
 	manifestPaths, err := b.Manifests()
 	if err != nil {
-		return nil, err
+		return images.Empty, err
 	}
 
 	for _, manifestPath := range manifestPaths {
-		images, err := ContainerImages(manifestPath)
+		imgs, err := ContainerImages(manifestPath)
 		if err != nil {
-			return nil, fmt.Errorf("find container images for %q: %w", manifestPath, err)
+			return images.Empty, fmt.Errorf("find container images for %q: %w", manifestPath, err)
 		}
 
-		printImageList(filepath.Base(manifestPath), images)
+		printImageList(filepath.Base(manifestPath), imgs)
 
-		seen = union(seen, images)
+		seen = seen.Union(imgs)
 	}
 
 	printImageList(BundleConfigFilename, b.Config.Images)
 
-	return union(seen, b.Config.Images), nil
+	return seen.Union(b.Config.Images), nil
 }
 
-func printImageList(source string, images []string) {
-	fmt.Printf("Images in %s: [%s]\n", source, strings.Join(images, ","))
+func printImageList(source string, imgs images.Set) {
+	fmt.Printf("Images in %s: %v\n", source, imgs)
 }
 
 // Bundle writes archive to disk.
