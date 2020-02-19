@@ -17,21 +17,17 @@
 package sheaf
 
 import (
-	"bytes"
-	"fmt"
+	"strings"
 
 	"github.com/pivotal/image-relocation/pkg/image"
 )
 
-func replaceImage(manifest []byte, oldImage image.Name, newImage image.Name) []byte {
-	for _, oi := range oldImage.Synonyms() {
-		old := fmt.Sprintf("image: %s", oi.String())
-		new := fmt.Sprintf("image: %s", newImage.String())
-		manifest = bytes.Replace(manifest, []byte(old), []byte(new), -1)
-
-		old = fmt.Sprintf("image: %q", oi.String())
-		new = fmt.Sprintf("image: %q", newImage.String())
-		manifest = bytes.Replace(manifest, []byte(old), []byte(new), -1)
+func replaceImage(manifest []byte, imageMap map[image.Name]image.Name) []byte {
+	replacements := []string{}
+	for oldImage, newImage := range imageMap {
+		for _, oi := range oldImage.Synonyms() {
+			replacements = append(replacements, oi.String(), newImage.String())
+		}
 	}
-	return manifest
+	return []byte(strings.NewReplacer(replacements...).Replace(string(manifest)))
 }

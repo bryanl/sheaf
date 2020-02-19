@@ -29,44 +29,50 @@ func TestReplaceImage(t *testing.T) {
 	tests := []struct {
 		name         string
 		path         string
-		oldImage     string
-		newImage     string
+		mapping      map[string]string
 		expectedPath string
 	}{
 		{
 			name:         "deployment",
 			path:         "deployment.yaml",
-			oldImage:     "nginx:1.7.9",
-			newImage:     "example.com/nginx:1.7.9",
+			mapping:      map[string]string{"nginx:1.7.9": "example.com/nginx:1.7.9"},
 			expectedPath: "deployment-replaced.yaml",
 		},
 		{
 			name:         "synonym",
 			path:         "deployment-synonym.yaml",
-			oldImage:     "nginx:1.7.9",
-			newImage:     "example.com/nginx:1.7.9",
+			mapping:      map[string]string{"nginx:1.7.9": "example.com/nginx:1.7.9"},
 			expectedPath: "deployment-replaced.yaml",
 		},
 		{
 			name:         "quoted",
 			path:         "quoted.yaml",
-			oldImage:     "quay.io/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a",
-			newImage:     "example.com/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a",
+			mapping:      map[string]string{"quay.io/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a": "example.com/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a"},
 			expectedPath: "quoted-replaced.yaml",
 		},
+		{
+			name:         "non-standard",
+			path:         "non-standard.yaml",
+			mapping:      map[string]string{"gcr.io/cf-build-service-public/kpack/build-init@sha256:5205844aefba7c91803198ef81da9134031f637d605d293dfe4531c622aa42b1": "example.com/cf-build-service-public/kpack/build-init@sha256:5205844aefba7c91803198ef81da9134031f637d605d293dfe4531c622aa42b1"},
+			expectedPath: "non-standard-replaced.yaml"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest := readTestData(tt.path, t)
 
-			oldImage, err := image.NewName(tt.oldImage)
-			require.NoError(t, err)
+			mapping := map[image.Name]image.Name{}
+			for old, new := range tt.mapping {
+				oldName, err := image.NewName(old)
+				require.NoError(t, err)
 
-			newImage, err := image.NewName(tt.newImage)
-			require.NoError(t, err)
+				newName, err := image.NewName(new)
+				require.NoError(t, err)
 
-			updatedManifest := string(replaceImage(manifest, oldImage, newImage))
+				mapping[oldName] = newName
+			}
+
+			updatedManifest := string(replaceImage(manifest, mapping))
 			expectedManifest := string(readTestData(tt.expectedPath, t))
 
 			require.Equal(t, expectedManifest, updatedManifest)
