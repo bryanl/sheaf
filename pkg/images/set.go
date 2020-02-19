@@ -75,7 +75,7 @@ func (s Set) Union(t Set) Set {
 
 // Slice returns this set as an unsorted slice of image references.
 func (s Set) Slice() []image.Name {
-	result := []image.Name{}
+	var result []image.Name
 	for i := range s.m {
 		result = append(result, i)
 	}
@@ -84,7 +84,7 @@ func (s Set) Slice() []image.Name {
 
 // Strings returns the image references in the set as a sorted slice of strings.
 func (s Set) Strings() []string {
-	result := []string{}
+	var result []string
 	for i := range s.m {
 		result = append(result, i.String())
 	}
@@ -105,13 +105,15 @@ func (s Set) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON decodes a JSON array of image references into a Set.
 func (s *Set) UnmarshalJSON(data []byte) error {
 	var v interface{}
-	json.Unmarshal(data, &v)
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
 	refs, ok := v.([]interface{})
 	if !ok {
 		return fmt.Errorf("unmarshalled data not a slice: %v", v)
 	}
 
-	strs := []string{}
+	var strs []string
 	for _, ref := range refs {
 		x, ok := ref.(string)
 		if !ok {
