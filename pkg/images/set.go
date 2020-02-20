@@ -108,6 +108,12 @@ func (s *Set) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
+
+	if v == nil {
+		*s = Empty
+		return nil
+	}
+
 	refs, ok := v.([]interface{})
 	if !ok {
 		return fmt.Errorf("unmarshalled data not a slice: %v", v)
