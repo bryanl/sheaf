@@ -36,3 +36,11 @@ func TestMarshalling(t *testing.T) {
 
 	require.Equal(t, s, u)
 }
+
+func TestNullUnmarshalling(t *testing.T) {
+	var u images.Set
+	err := (&u).UnmarshalJSON([]byte("null"))
+	require.NoError(t, err)
+
+	require.Equal(t, images.Empty, u)
+}
