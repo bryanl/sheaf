@@ -23,7 +23,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/pivotal/image-relocation/pkg/pathmapping"
 	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
 )
@@ -77,30 +77,46 @@ func Stage(config StageConfig) error {
 		}
 	}()
 
-	layoutPath := filepath.Join(unpackDir, "artifacts", "layout")
-	indexPath := filepath.Join(layoutPath, "index.json")
+	imgs := images.Empty
 
-	images, err := LoadFromIndex(indexPath)
+	// scan the manifests for images
+	manifestsPath := filepath.Join(unpackDir, "app", "manifests")
+
+	entries, err := ioutil.ReadDir(manifestsPath)
 	if err != nil {
-		return fmt.Errorf("read artifact layout index: %w", err)
+		return err
 	}
 
+	for _, fi := range entries {
+		if fi.IsDir() {
+			continue
+		}
+
+		manifestPath := filepath.Join(manifestsPath, fi.Name())
+
+		ci, err := ContainerImages(manifestPath)
+		if err != nil {
+			return err
+		}
+
+		imgs = imgs.Union(ci)
+	}
+
+	// add in the images from the bundle configuration
+	imgs = imgs.Union(bundle.Config.Images)
+
+	layoutPath := filepath.Join(unpackDir, "artifacts", "layout")
 	registryClient := ggcr.NewRegistryClient()
 
 	layout, err := registryClient.ReadLayout(layoutPath)
 	if err != nil {
-		return fmt.Errorf("create registry layout: %w", err)
+		return fmt.Errorf("read registry layout: %w", err)
 	}
 
-	for i := range images {
-		refName := images[i].RefName()
-		imageName, err := image.NewName(refName)
-		if err != nil {
-			return fmt.Errorf("create image name for ref %q: %w", refName, err)
-		}
+	for _, imageName := range imgs.Slice() {
 		imageDigest, err := layout.Find(imageName)
 		if err != nil {
-			return fmt.Errorf("find image digest for ref %q: %w", refName, err)
+			return fmt.Errorf("find image digest for ref %q: %w", imageName.String(), err)
 		}
 
 		newImageName, err := pathmapping.FlattenRepoPathPreserveTagDigest(config.RegistryPrefix, imageName)

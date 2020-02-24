@@ -65,7 +65,7 @@ func NewManifestGenerator(options ...ManifestGeneratorOption) *ManifestGenerator
 	return &mg
 }
 
-// Generate generates the manifests contained in a bundle archive to the supplied writer..
+// Generate generates the manifests contained in a bundle archive to the supplied writer.
 func (mg *ManifestGenerator) Generate(w io.Writer) error {
 	tmpDir, err := ioutil.TempDir("", "sheaf")
 	if err != nil {
