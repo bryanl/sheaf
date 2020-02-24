@@ -363,6 +363,10 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/petar/GoLLRB v0.0.0-20190514000832-33fb24c13b99/go.mod h1:HUpKUBZnpzkdx0kD/+Yfuft+uD3zHGtXF/XJB14TUr4=
 github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR/tNboyR3/BZd58JJSHlUSCU=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
+github.com/pivotal/go-ape v0.0.0-20200220153345-b922e7e238e2 h1:PO/tjQMnZyGgLX3huv8n0jIP7rF7/1yKPDY6ENRUTdM=
+github.com/pivotal/go-ape v0.0.0-20200220153345-b922e7e238e2/go.mod h1:RPedFYCPqSbDDrNGfTbVi7vM4i+mbmo8YDmPCM2RHLY=
+github.com/pivotal/go-ape v0.0.0-20200224111603-3ada71e48e45 h1:y/N79c9zY9xvsUfrkunPJnL3RozPa3ktLcsprM77Slg=
+github.com/pivotal/go-ape v0.0.0-20200224111603-3ada71e48e45/go.mod h1:RPedFYCPqSbDDrNGfTbVi7vM4i+mbmo8YDmPCM2RHLY=
 github.com/pivotal/image-relocation v0.0.0-20191111101224-e94aff6df06c/go.mod h1:/JNbQwGylYm3AQh8q+MBF8e/h0W1Jy20JGTvozuXYTE=
 github.com/pivotal/image-relocation v0.0.0-20200211102444-66f85181c18c h1:3ck2UJqjfbV8qlAjAQv2FnvOcW2wrIAUoEP/uCghW4s=
 github.com/pivotal/image-relocation v0.0.0-20200211102444-66f85181c18c/go.mod h1:/JNbQwGylYm3AQh8q+MBF8e/h0W1Jy20JGTvozuXYTE=
