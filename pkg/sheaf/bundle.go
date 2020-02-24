@@ -26,7 +26,7 @@ import (
 	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/cnabio/duffle/pkg/imagestore"
 	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
-	dcopy "github.com/otiai10/copy"
+	"github.com/pivotal/go-ape/pkg/filecopy"
 )
 
 // Bundle represents a bundle
@@ -82,8 +82,8 @@ func OpenBundle(path string) (*Bundle, error) {
 	}
 
 	root := filepath.Join(tmpDir, filepath.Base(path))
-	if err := dcopy.Copy(path, root); err != nil {
-		return nil, fmt.Errorf("stage bundle: %w", err)
+	if err := filecopy.Copy(root, path); err != nil {
+		return nil, fmt.Errorf("copy bundle: %w", err)
 	}
 
 	store, err := ocilayout.Create(setStoreLocation(root))
