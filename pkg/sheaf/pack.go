@@ -46,7 +46,7 @@ func Pack(config PackConfig) error {
 
 	for _, ref := range imgs.Slice() {
 		fmt.Printf("Adding %s to bundle\n", ref)
-		if _, err := bundle.Store.Add(ref.String()); err != nil {
+		if _, err := bundle.Layout.Add(ref); err != nil {
 			return fmt.Errorf("add %s: %w", ref, err)
 		}
 	}
