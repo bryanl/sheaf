@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/bryanl/sheaf/pkg/images"
-	"github.com/cnabio/duffle/pkg/imagestore"
-	"github.com/cnabio/duffle/pkg/imagestore/ocilayout"
 	"github.com/pivotal/go-ape/pkg/filecopy"
+	"github.com/pivotal/image-relocation/pkg/registry"
+	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
 )
 
 // Bundle represents a bundle
@@ -35,8 +36,8 @@ type Bundle struct {
 	Path string
 	// Config is the BundleConfig for the bundle.
 	Config BundleConfig
-	// Store is the image store
-	Store imagestore.Store
+	// Layout is the OCI image layout for the bundle.
+	Layout registry.Layout
 
 	// tmpDir for temporary things.
 	tmpDir string
@@ -86,15 +87,16 @@ func OpenBundle(path string) (*Bundle, error) {
 		return nil, fmt.Errorf("copy bundle: %w", err)
 	}
 
-	store, err := ocilayout.Create(setStoreLocation(root))
+	layout, err := ggcr.NewRegistryClient(ggcr.WithTransport(http.DefaultTransport)).
+		NewLayout(filepath.Join(root, "artifacts", "layout"))
 	if err != nil {
-		return nil, fmt.Errorf("create image store: %w", err)
+		return nil, fmt.Errorf("create OCI image layout: %w", err)
 	}
 
 	bundle := &Bundle{
 		Path:   root,
 		Config: bundleConfig,
-		Store:  store,
+		Layout: layout,
 		tmpDir: tmpDir,
 	}
 
@@ -119,13 +121,6 @@ func ImportBundle(archivePath, unpackDir string) (*Bundle, error) {
 	}
 
 	return OpenBundle(unpackDir)
-}
-
-func setStoreLocation(archiveDir string) imagestore.Option {
-	return func(parameters imagestore.Parameters) imagestore.Parameters {
-		parameters.ArchiveDir = archiveDir
-		return parameters
-	}
 }
 
 // Manifests returns paths to manifests contained in the bundle.
