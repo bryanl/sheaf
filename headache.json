@@ -1,0 +1,9 @@
+{
+    "headerFile": "./license-header.txt",
+    "style": "SlashStar",
+    "includes": ["**/*.go"],
+    "data": {
+      "Owner": "Sheaf Authors",
+      "Protocol": "https"
+    }
+  }
