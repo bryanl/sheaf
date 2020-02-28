@@ -22,7 +22,8 @@ func NewRootCommand() *cobra.Command {
 		NewAddImageCommand(),
 		NewPackCommand(),
 		NewStageCommand(),
-		NewGenManifestCommand())
+		NewGenManifestCommand(),
+		NewArchiveCommand())
 
 	return cmd
 }
