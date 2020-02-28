@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "manifests": [
+    {
+      "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+      "size": 913,
+      "digest": "sha256:4528b0a54dd4ec91f0398856216b24532566618340c7ef6fd00345b776fb2c10",
+      "annotations": {
+        "org.opencontainers.image.ref.name": "example/image-a:abc"
+      }
+    },
+    {
+      "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+      "size": 913,
+      "digest": "sha256:a7358e4600ae00bf976dba9c299c3dcd7bd0473e18ff334dde35ba0f6535663b",
+      "annotations": {
+        "org.opencontainers.image.ref.name": "example/image-b:v1.0.0"
+      }
+    }
+  ]
+}

@@ -13,9 +13,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/pivotal/image-relocation/pkg/pathmapping"
 	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
+
+	"github.com/bryanl/sheaf/pkg/images"
 )
 
 // StageConfig is configuration for Stage.
