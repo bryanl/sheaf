@@ -12,7 +12,7 @@ import (
 
 // ArchiveListImagesConfig is configuration for ArchiveListImages
 type ArchiveListImagesConfig struct {
-	Bundle BundleService
+	Bundle Bundle
 }
 
 // ArchiveListImages lists images from a bundle.

@@ -11,114 +11,50 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
-
-	"github.com/pivotal/image-relocation/pkg/pathmapping"
-	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
-
-	"github.com/bryanl/sheaf/pkg/images"
 )
 
-// StageConfig is configuration for Stage.
+// StageConfig is configuration for Relocate.
 type StageConfig struct {
 	ArchivePath    string
 	RegistryPrefix string
-	UnpackDir      string
+	BundleFactory  BundleFactory
+	ImageStager    ImageRelocator
+	Archiver       Archiver
 }
 
 // Stage stages an archive in a registry.
 func Stage(config StageConfig) error {
-	unpackDir := config.UnpackDir
-	if unpackDir == "" {
-		fmt.Println("using temporary directory to unpack")
-		tmpDir, err := ioutil.TempDir("", "sheaf")
-		if err != nil {
-			return fmt.Errorf("create temp dir: %w", err)
-		}
-		unpackDir = tmpDir
+	fmt.Printf("Relocating images in %s\n\n", config.ArchivePath)
 
-		defer func() {
-			if rErr := os.RemoveAll(unpackDir); rErr != nil {
-				log.Printf("remove temporary bundle path %q: %v", unpackDir, rErr)
-			}
-		}()
-	} else {
-		fmt.Printf("using unpack directory %s\n", unpackDir)
-		if err := os.MkdirAll(unpackDir, 0700); err != nil {
-			return fmt.Errorf("unable to create unpack dir: %w", err)
-		}
+	unpackDir, err := ioutil.TempDir("", "sheaf")
+	if err != nil {
+		return fmt.Errorf("create temp dir: %w", err)
 	}
 
-	unpacker := NewUnpacker(
-		UnpackerArchivePath(config.ArchivePath),
-		UnpackerDest(unpackDir))
+	defer func() {
+		if rErr := os.RemoveAll(unpackDir); rErr != nil {
+			log.Printf("remove temporary bundle path %q: %v", unpackDir, rErr)
+		}
+	}()
 
-	if err := unpacker.Unpack(); err != nil {
+	if err := config.Archiver.Unarchive(config.ArchivePath, unpackDir); err != nil {
 		return fmt.Errorf("unpack bundle: %w", err)
 	}
 
-	bundle, err := OpenBundle(unpackDir)
+	bundle, err := config.BundleFactory(unpackDir)
 	if err != nil {
 		return fmt.Errorf("open bundle: %w", err)
 	}
 
-	defer func() {
-		if cErr := bundle.Close(); err != nil {
-			log.Printf("close bundle: %v", cErr)
-		}
-	}()
-
-	imgs := images.Empty
-
-	// scan the manifests for images
-	manifestsPath := filepath.Join(unpackDir, "app", "manifests")
-
-	entries, err := ioutil.ReadDir(manifestsPath)
+	fmt.Println("Locating images in archive")
+	list, err := bundle.Images()
 	if err != nil {
-		return err
+		return fmt.Errorf("load images from bundle: %w", err)
 	}
 
-	for _, fi := range entries {
-		if fi.IsDir() {
-			continue
-		}
-
-		manifestPath := filepath.Join(manifestsPath, fi.Name())
-
-		ci, err := ContainerImages(manifestPath)
-		if err != nil {
-			return err
-		}
-
-		imgs = imgs.Union(ci)
-	}
-
-	// add in the images from the bundle configuration
-	imgs = imgs.Union(bundle.Config.Images)
-
-	layoutPath := filepath.Join(unpackDir, "artifacts", "layout")
-	registryClient := ggcr.NewRegistryClient()
-
-	layout, err := registryClient.ReadLayout(layoutPath)
-	if err != nil {
-		return fmt.Errorf("read registry layout: %w", err)
-	}
-
-	for _, imageName := range imgs.Slice() {
-		imageDigest, err := layout.Find(imageName)
-		if err != nil {
-			return fmt.Errorf("find image digest for ref %q: %w", imageName.String(), err)
-		}
-
-		newImageName, err := pathmapping.FlattenRepoPathPreserveTagDigest(config.RegistryPrefix, imageName)
-		if err != nil {
-			return fmt.Errorf("create relocated image name: %w", err)
-		}
-
-		fmt.Printf("relocating %s to %s\n", imageName.String(), newImageName.String())
-		if err := layout.Push(imageDigest, newImageName); err != nil {
-			return fmt.Errorf("push %s: %w", newImageName.String(), err)
-		}
+	fmt.Println("Moving images to new location")
+	if err := config.ImageStager.Relocate(unpackDir, config.RegistryPrefix, list.Slice()); err != nil {
+		return fmt.Errorf("stage images: %w", err)
 	}
 
 	return nil

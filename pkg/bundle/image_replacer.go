@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package sheaf
+package bundle
 
 import (
 	"strings"
@@ -13,7 +13,7 @@ import (
 )
 
 func replaceImage(manifest []byte, imageMap map[image.Name]image.Name) []byte {
-	replacements := []string{}
+	var replacements []string
 	for oldImage, newImage := range imageMap {
 		for _, oi := range oldImage.Synonyms() {
 			replacements = append(replacements, oi.String(), newImage.String())

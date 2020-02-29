@@ -15,13 +15,13 @@ import (
 
 // ArtifactsService is a service for interacting with artifacts in a bundle.
 type ArtifactsService struct {
-	bundle sheaf.BundleService
+	bundle sheaf.Bundle
 }
 
 var _ sheaf.ArtifactsService = &ArtifactsService{}
 
 // NewArtifactsService creates an instance of ArtifactsService.
-func NewArtifactsService(bundle sheaf.BundleService) *ArtifactsService {
+func NewArtifactsService(bundle sheaf.Bundle) *ArtifactsService {
 	s := ArtifactsService{
 		bundle: bundle,
 	}

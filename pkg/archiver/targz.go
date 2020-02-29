@@ -11,10 +11,41 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/docker/docker/pkg/archive"
 )
+
+var (
+	tarOptions = &archive.TarOptions{
+		Compression:      archive.Gzip,
+		IncludeFiles:     []string{"."},
+		IncludeSourceDir: true,
+		NoLchown:         true,
+	}
+)
+
+// targz creates a gzipped tar archive. Assume src is a directory.
+func targz(src string, w io.Writer) error {
+	export, err := archive.TarWithOptions(src, tarOptions)
+	if err != nil {
+		return fmt.Errorf("create tar ball: %w", err)
+	}
+	defer func() {
+		if cErr := export.Close(); cErr != nil {
+			log.Printf("close tar ball: %v", err)
+		}
+	}()
+
+	if _, err := io.Copy(w, export); err != nil {
+		return fmt.Errorf("write tar ball: %w", err)
+	}
+
+	return nil
+}
 
 // untargz unarchives a a gzipped tar archiver.
 func untargz(src io.Reader, dst string) error {

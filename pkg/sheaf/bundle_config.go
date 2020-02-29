@@ -22,6 +22,25 @@ const (
 	bundleConfigDefaultVersion = "0.1.0"
 )
 
+// UserDefinedImageType is the type of user defined image.
+type UserDefinedImageType string
+
+const (
+	// MultiResult states the JSON path will return multiple values.
+	MultiResult UserDefinedImageType = "multiple"
+	// SingleResult states the JSON path will return a single value.
+	SingleResult UserDefinedImageType = "single"
+)
+
+// UserDefinedImage is a user defined image. These allow sheaf to find more
+// images.
+type UserDefinedImage struct {
+	APIVersion string               `json:"apiVersion"`
+	Kind       string               `json:"kind"`
+	JSONPath   string               `json:"jsonPath"`
+	Type       UserDefinedImageType `json:"type"`
+}
+
 // BundleConfig is a bundle configuration.
 type BundleConfig struct {
 	// Name is the name of the bundle.
@@ -32,6 +51,8 @@ type BundleConfig struct {
 	SchemaVersion string `json:"schemaVersion"`
 	// Images is a set of images required by the bundle.
 	Images images.Set `json:"images"`
+	// UserDefinedImages is a list of user defined image locations.
+	UserDefinedImages []UserDefinedImage `json:"userDefinedImages,omitempty"`
 }
 
 // NewBundleConfig creates a BundleConfig.

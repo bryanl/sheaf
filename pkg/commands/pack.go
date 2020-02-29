@@ -8,9 +8,11 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
+	"github.com/bryanl/sheaf/pkg/bundle"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -27,7 +29,11 @@ func NewPackCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			config := sheaf.PackConfig{Path: args[0]}
+			config := sheaf.PackConfig{
+				BundleURI:     args[0],
+				BundleFactory: bundle.DefaultBundleFactory,
+				Packer:        bundle.NewPacker(os.Stdout),
+			}
 			return sheaf.Pack(config)
 		},
 	}
