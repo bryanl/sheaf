@@ -62,7 +62,7 @@ Stage the images located in the archive to a new registry with `<prefix>`. Image
 
 ### Generate Manifest
 
-`sheaf gen-manifest <archive path> [--prefix=<prefix>]`
+`sheaf manifest show <archive path> [--prefix=<prefix>]`
 
 Generate manifests stored in the archive to stdout. If `<prefix>` is specified, the images in the manifests will be
 rewritten to the prefixed location. 

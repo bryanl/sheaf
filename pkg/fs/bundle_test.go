@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ import (
 
 func TestBundle_Path(t *testing.T) {
 	withBundleDir(t, func(dir string) {
-		stageFile(t, "bundle.json", filepath.Join(dir, "bundle.json"))
+		stageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
 
 		bundle, err := NewBundle(dir)
 		require.NoError(t, err)
@@ -30,7 +30,7 @@ func TestBundle_Path(t *testing.T) {
 
 func TestBundle_Config(t *testing.T) {
 	withBundleDir(t, func(dir string) {
-		configRaw := stageFile(t, "bundle.json", filepath.Join(dir, "bundle.json"))
+		configRaw := stageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
 		var wanted sheaf.BundleConfig
 		require.NoError(t, json.Unmarshal(configRaw, &wanted))
 
@@ -44,7 +44,7 @@ func TestBundle_Config(t *testing.T) {
 
 func TestBundle_Manifests(t *testing.T) {
 	withBundleDir(t, func(dir string) {
-		stageFile(t, "bundle.json", filepath.Join(dir, "bundle.json"))
+		stageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
 
 		manifestDir := filepath.Join("testdata", "manifests")
 		bundle, err := NewBundle(dir, ManifestsDirOption(manifestDir))

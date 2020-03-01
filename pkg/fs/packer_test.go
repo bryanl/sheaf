@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"io"
@@ -51,8 +51,8 @@ func TestPacker_Pack(t *testing.T) {
 
 	require.NoError(t, f.Close())
 
-	// ensure bundle config exists
-	require.True(t, a.contents.hasKey("bundle.json"))
+	// ensure fs config exists
+	require.True(t, a.contents.hasKey(sheaf.BundleConfigFilename))
 
 	// ensure manifests exists
 	require.True(t, a.contents.hasKey("app", "manifests", "deploy.yaml"))

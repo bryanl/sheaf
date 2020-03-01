@@ -19,7 +19,7 @@ import (
 
 // ManifestGenerator generates manifests.
 type ManifestGenerator interface {
-	Generate(w io.Writer) error
+	Show(w io.Writer) error
 }
 
 // BundleFactory is a factory for creating bundles given a URI.
@@ -35,7 +35,7 @@ type Bundle interface {
 	Images() (images.Set, error)
 }
 
-// BundleManifest describes a manifest in a bundle.
+// BundleManifest describes a manifest in a fs.
 type BundleManifest struct {
 	ID   string
 	Data []byte
@@ -48,7 +48,7 @@ func loadBundleConfig(path string) (BundleConfig, string, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return bundleConfig, "", fmt.Errorf("bundle directory %q does not exist", path)
+			return bundleConfig, "", fmt.Errorf("fs directory %q does not exist", path)
 		}
 
 		return bundleConfig, "", err
@@ -62,7 +62,7 @@ func loadBundleConfig(path string) (BundleConfig, string, error) {
 
 	bundleConfig, err = LoadBundleConfig(bundleConfigFilename)
 	if err != nil {
-		return bundleConfig, "", fmt.Errorf("load bundle config: %w", err)
+		return bundleConfig, "", fmt.Errorf("load fs config: %w", err)
 	}
 
 	return bundleConfig, bundleConfigFilename, err

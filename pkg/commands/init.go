@@ -21,10 +21,10 @@ func NewInitCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "initialize bundle",
+		Short: "initialize fs",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				return fmt.Errorf("requires path to new bundle directory")
+				return fmt.Errorf("requires path to new fs directory")
 			}
 
 			return nil
@@ -38,8 +38,8 @@ func NewInitCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&version, "version", "", "bundle version")
-	cmd.Flags().StringVar(&bundlePath, "bundle-path", "", "bundle path")
+	cmd.Flags().StringVar(&version, "version", "", "fs version")
+	cmd.Flags().StringVar(&bundlePath, "fs-path", "", "fs path")
 
 	return cmd
 }

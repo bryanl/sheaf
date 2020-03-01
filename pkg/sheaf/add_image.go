@@ -12,16 +12,16 @@ import (
 	"github.com/bryanl/sheaf/pkg/images"
 )
 
-// ImageAdder adds images to a bundle.
+// ImageAdder adds images to a fs.
 type ImageAdder struct {
-	// BundlePath is the path to the bundle.
+	// BundlePath is the path to the fs.
 	BundlePath string
 }
 
 // NewImageAdder creates an instance of ImageAdder.
 func NewImageAdder(bundlePath string) (*ImageAdder, error) {
 	if err := ensureBundlePath(bundlePath); err != nil {
-		return nil, fmt.Errorf("ensure bundle path %q exists: %w", bundlePath, err)
+		return nil, fmt.Errorf("ensure fs path %q exists: %w", bundlePath, err)
 	}
 
 	return &ImageAdder{
@@ -29,7 +29,7 @@ func NewImageAdder(bundlePath string) (*ImageAdder, error) {
 	}, nil
 }
 
-// Add adds a list of images to the bundle manifest.
+// Add adds a list of images to the fs manifest.
 func (ia *ImageAdder) Add(imageStrs []string) error {
 	im, err := images.New(imageStrs)
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bryanl/sheaf/pkg/archiver"
-	"github.com/bryanl/sheaf/pkg/bundle"
+	"github.com/bryanl/sheaf/pkg/fs"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -46,7 +46,7 @@ func NewListImages() *cobra.Command {
 				return err
 			}
 
-			b, err := bundle.NewBundle(dir)
+			b, err := fs.NewBundle(dir)
 			if err != nil {
 				return err
 			}

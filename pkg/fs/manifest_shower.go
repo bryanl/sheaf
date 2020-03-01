@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"bytes"
@@ -22,43 +22,43 @@ import (
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
-// ManifestGeneratorOption is an option for configuring ManifestGenerator.
-type ManifestGeneratorOption func(mg ManifestGenerator) ManifestGenerator
+// ManifestShowerOption is an option for configuring ManifestShower.
+type ManifestShowerOption func(mg ManifestShower) ManifestShower
 
-// ManifestGeneratorPrefix sets the prefix for relocating images.
-func ManifestGeneratorPrefix(p string) ManifestGeneratorOption {
-	return func(mg ManifestGenerator) ManifestGenerator {
+// ManifestShowerPrefix sets the prefix for relocating images.
+func ManifestShowerPrefix(p string) ManifestShowerOption {
+	return func(mg ManifestShower) ManifestShower {
 		mg.Prefix = p
 		return mg
 	}
 }
 
-// ManifestGeneratorArchivePath sets the bundle archive path.
-func ManifestGeneratorArchivePath(p string) ManifestGeneratorOption {
-	return func(mg ManifestGenerator) ManifestGenerator {
+// ManifestShowerArchivePath sets the fs archive path.
+func ManifestShowerArchivePath(p string) ManifestShowerOption {
+	return func(mg ManifestShower) ManifestShower {
 		mg.ArchivePath = p
 		return mg
 	}
 }
 
-// ManifestGeneratorArchiver sets the archiver for ManifestGenerator.
-func ManifestGeneratorArchiver(a sheaf.Archiver) ManifestGeneratorOption {
-	return func(mg ManifestGenerator) ManifestGenerator {
+// ManifestShowerArchiver sets the archiver for ManifestShower.
+func ManifestShowerArchiver(a sheaf.Archiver) ManifestShowerOption {
+	return func(mg ManifestShower) ManifestShower {
 		mg.Archiver = a
 		return mg
 	}
 }
 
-// ManifestGenerator generates manifests from a bundle archive.
-type ManifestGenerator struct {
+// ManifestShower generates manifests from a fs archive.
+type ManifestShower struct {
 	ArchivePath string
 	Prefix      string
 	Archiver    sheaf.Archiver
 }
 
-// NewManifestGenerator creates an instance of ManifestGenerator.
-func NewManifestGenerator(options ...ManifestGeneratorOption) *ManifestGenerator {
-	mg := ManifestGenerator{}
+// NewManifestShower creates an instance of ManifestShower.
+func NewManifestShower(options ...ManifestShowerOption) *ManifestShower {
+	mg := ManifestShower{}
 
 	for _, option := range options {
 		mg = option(mg)
@@ -67,8 +67,8 @@ func NewManifestGenerator(options ...ManifestGeneratorOption) *ManifestGenerator
 	return &mg
 }
 
-// Generate generates the manifests contained in a bundle archive to the supplied writer.
-func (mg *ManifestGenerator) Generate(w io.Writer) error {
+// Show generates the manifests contained in a fs archive to the supplied writer.
+func (mg *ManifestShower) Show(w io.Writer) error {
 	tmpDir, err := ioutil.TempDir("", "sheaf")
 	if err != nil {
 		return fmt.Errorf("create temporary directory: %w", err)
@@ -81,14 +81,14 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 	}()
 
 	if err := mg.Archiver.Unarchive(mg.ArchivePath, tmpDir); err != nil {
-		return fmt.Errorf("unpack bundle: %w", err)
+		return fmt.Errorf("unpack fs: %w", err)
 	}
 
 	manifestsPath := filepath.Join(tmpDir, "app", "manifests")
 
 	config, err := loadBundleConfig(tmpDir)
 	if err != nil {
-		return fmt.Errorf("read bundle configuration: %w", err)
+		return fmt.Errorf("read fs configuration: %w", err)
 	}
 
 	entries, err := ioutil.ReadDir(manifestsPath)

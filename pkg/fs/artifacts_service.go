@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"io/ioutil"
@@ -13,7 +13,7 @@ import (
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
-// ArtifactsService is a service for interacting with artifacts in a bundle.
+// ArtifactsService is a service for interacting with artifacts in a fs.
 type ArtifactsService struct {
 	bundle sheaf.Bundle
 }

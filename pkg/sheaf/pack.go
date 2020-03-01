@@ -19,11 +19,11 @@ type PackConfig struct {
 	BundleFactory BundleFactory
 }
 
-// Pack packs a bundle.
+// Pack packs a fs.
 func Pack(config PackConfig) error {
 	bundle, err := config.BundleFactory(config.BundleURI)
 	if err != nil {
-		return fmt.Errorf("open bundle: %w", err)
+		return fmt.Errorf("open fs: %w", err)
 	}
 
 	bundleConfig := bundle.Config()

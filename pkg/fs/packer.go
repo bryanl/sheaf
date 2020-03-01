@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"fmt"
@@ -17,10 +17,6 @@ import (
 	"github.com/bryanl/sheaf/pkg/archiver"
 	"github.com/bryanl/sheaf/pkg/codec"
 	"github.com/bryanl/sheaf/pkg/sheaf"
-)
-
-var (
-	bundleConfigName = "bundle.json"
 )
 
 // PackerOption is a functional option for configuring Packer.
@@ -42,7 +38,7 @@ func PackerArchiver(a sheaf.Archiver) PackerOption {
 	}
 }
 
-// Packer packs a bundle into an archive.
+// Packer packs a fs into an archive.
 type Packer struct {
 	codec         sheaf.Encoder
 	archiver      sheaf.Archiver
@@ -82,7 +78,7 @@ func (p Packer) Pack(b sheaf.Bundle, w io.Writer) error {
 	}()
 
 	if err := p.stageBundleConfig(dir, b); err != nil {
-		return fmt.Errorf("stage bundle config: %w", err)
+		return fmt.Errorf("stage fs config: %w", err)
 	}
 
 	if err := p.stageManifests(dir, b); err != nil {
@@ -111,7 +107,7 @@ func (p Packer) stageImages(dir string, b sheaf.Bundle) error {
 
 	imageList, err := b.Images()
 	if err != nil {
-		return fmt.Errorf("get images from bundle: %w", err)
+		return fmt.Errorf("get images from fs: %w", err)
 	}
 
 	for _, imageName := range imageList.Slice() {
@@ -148,15 +144,15 @@ func (p Packer) stageManifests(dir string, b sheaf.Bundle) error {
 }
 
 func (p Packer) stageBundleConfig(dir string, b sheaf.Bundle) error {
-	fmt.Fprintln(p.out, "Staging bundle configuration")
+	fmt.Fprintln(p.out, "Staging fs configuration")
 
-	bundleConfigPath := filepath.Join(dir, bundleConfigName)
+	bundleConfigPath := filepath.Join(dir, sheaf.BundleConfigFilename)
 	bundleConfigData, err := p.codec.Encode(b.Config())
 	if err != nil {
-		return fmt.Errorf("encode bundle config: %w", err)
+		return fmt.Errorf("encode fs config: %w", err)
 	}
 	if err := ioutil.WriteFile(bundleConfigPath, bundleConfigData, 0600); err != nil {
-		return fmt.Errorf("write bundle config: %w", err)
+		return fmt.Errorf("write fs config: %w", err)
 	}
 	return nil
 }

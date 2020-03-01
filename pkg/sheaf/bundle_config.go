@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	// BundleConfigFilename is the filename for a bundle config.
+	// BundleConfigFilename is the filename for a fs config.
 	BundleConfigFilename = "bundle.json"
 
 	bundleConfigDefaultVersion = "0.1.0"
@@ -41,15 +41,15 @@ type UserDefinedImage struct {
 	Type       UserDefinedImageType `json:"type"`
 }
 
-// BundleConfig is a bundle configuration.
+// BundleConfig is a fs configuration.
 type BundleConfig struct {
-	// Name is the name of the bundle.
+	// Name is the name of the fs.
 	Name string `json:"name"`
-	// Version is the version of the bundle.
+	// Version is the version of the fs.
 	Version string `json:"version"`
-	// SchemaVersion is the version of the schema this bundle uses.
+	// SchemaVersion is the version of the schema this fs uses.
 	SchemaVersion string `json:"schemaVersion"`
-	// Images is a set of images required by the bundle.
+	// Images is a set of images required by the fs.
 	Images images.Set `json:"images"`
 	// UserDefinedImages is a list of user defined image locations.
 	UserDefinedImages []UserDefinedImage `json:"userDefinedImages,omitempty"`
@@ -93,7 +93,7 @@ func StoreBundleConfig(bc BundleConfig, filename string) error {
 	return ioutil.WriteFile(filename, jbc, 0644)
 }
 
-// Filename returns the bundle archive file name for this BundleConfig.
+// Filename returns the fs archive file name for this BundleConfig.
 func (bc *BundleConfig) Filename(dir string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s-%s.tgz", bc.Name, bc.Version))
 }
