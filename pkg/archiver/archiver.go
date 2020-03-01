@@ -7,6 +7,7 @@
 package archiver
 
 import (
+	"io"
 	"log"
 	"os"
 
@@ -28,6 +29,11 @@ func NewArchiver() *Archiver {
 	a := Archiver{}
 
 	return &a
+}
+
+// Archive creates a gzipped tarball.
+func (a Archiver) Archive(src string, w io.Writer) error {
+	return targz(src, w)
 }
 
 // Unarchive unarchives a tar.gz file from src to dest.

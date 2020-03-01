@@ -12,7 +12,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/bryanl/sheaf/pkg/archiver"
+	"github.com/bryanl/sheaf/pkg/bundle"
 )
 
 // NewGenManifestCommand creates a gen manifest command.
@@ -30,9 +31,10 @@ func NewGenManifestCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			mg := sheaf.NewManifestGenerator(
-				sheaf.ManifestGeneratorArchivePath(args[0]),
-				sheaf.ManifestGeneratorPrefix(prefix))
+			mg := bundle.NewManifestGenerator(
+				bundle.ManifestGeneratorArchivePath(args[0]),
+				bundle.ManifestGeneratorPrefix(prefix),
+				bundle.ManifestGeneratorArchiver(archiver.Default))
 			return mg.Generate(os.Stdout)
 		},
 	}

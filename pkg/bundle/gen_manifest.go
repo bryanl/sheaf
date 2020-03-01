@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package sheaf
+package bundle
 
 import (
 	"bytes"
@@ -17,6 +17,9 @@ import (
 
 	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/pathmapping"
+
+	"github.com/bryanl/sheaf/pkg/manifest"
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // ManifestGeneratorOption is an option for configuring ManifestGenerator.
@@ -38,10 +41,19 @@ func ManifestGeneratorArchivePath(p string) ManifestGeneratorOption {
 	}
 }
 
+// ManifestGeneratorArchiver sets the archiver for ManifestGenerator.
+func ManifestGeneratorArchiver(a sheaf.Archiver) ManifestGeneratorOption {
+	return func(mg ManifestGenerator) ManifestGenerator {
+		mg.Archiver = a
+		return mg
+	}
+}
+
 // ManifestGenerator generates manifests from a bundle archive.
 type ManifestGenerator struct {
 	ArchivePath string
 	Prefix      string
+	Archiver    sheaf.Archiver
 }
 
 // NewManifestGenerator creates an instance of ManifestGenerator.
@@ -68,14 +80,16 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 		}
 	}()
 
-	unpacker := NewUnpacker(
-		UnpackerArchivePath(mg.ArchivePath),
-		UnpackerDest(tmpDir))
-	if err := unpacker.Unpack(); err != nil {
-		return fmt.Errorf("unpack bunle: %w", err)
+	if err := mg.Archiver.Unarchive(mg.ArchivePath, tmpDir); err != nil {
+		return fmt.Errorf("unpack bundle: %w", err)
 	}
 
 	manifestsPath := filepath.Join(tmpDir, "app", "manifests")
+
+	config, err := loadBundleConfig(tmpDir)
+	if err != nil {
+		return fmt.Errorf("read bundle configuration: %w", err)
+	}
 
 	entries, err := ioutil.ReadDir(manifestsPath)
 	if err != nil {
@@ -95,7 +109,7 @@ func (mg *ManifestGenerator) Generate(w io.Writer) error {
 		}
 
 		if mg.Prefix != "" {
-			images, err := ContainerImages(manifestPath)
+			images, err := manifest.ContainerImages(manifestPath, config.UserDefinedImages)
 			if err != nil {
 				return err
 			}

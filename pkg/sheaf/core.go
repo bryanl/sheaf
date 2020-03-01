@@ -6,10 +6,15 @@
 
 package sheaf
 
-//go:generate mockgen -destination=../mocks/mock_bundle_service.go -package mocks github.com/bryanl/sheaf/pkg/sheaf BundleService
+import (
+	"io"
+
+	"github.com/pivotal/image-relocation/pkg/image"
+)
+
 //go:generate mockgen -destination=../mocks/mock_artifacts_service.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ArtifactsService
-//go:generate mockgen -destination=../mocks/mock_decoder.go -package mocks github.com/bryanl/sheaf/pkg/sheaf Decoder
 //go:generate mockgen -destination=../mocks/mock_image_service.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ImageService
+//go:generate mockgen -destination=../mocks/mock_image_relocator.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ImageRelocator
 
 // BundleImage is an image in a bundle.
 type BundleImage struct {
@@ -29,31 +34,12 @@ type ArtifactsService interface {
 	Image() ImageService
 }
 
-// Decoder decodes bytes into a value.
-type Decoder interface {
-	Decode([]byte, interface{}) error
+// Packer packs a bundle and writes it to a writer.
+type Packer interface {
+	Pack(b Bundle, w io.Writer) error
 }
 
-// Encoder encodes a value into bytes.
-type Encoder interface {
-	Encode(interface{}) ([]byte, error)
-}
-
-// Codec combines Decoder and Encoder
-type Codec interface {
-	Decoder
-	Encoder
-}
-
-// BundleService manages bundles.
-type BundleService interface {
-	Codec() Codec
-	Path() string
-	Config() BundleConfig
-	Artifacts() ArtifactsService
-}
-
-// Archiver manages archives.
-type Archiver interface {
-	Unarchive(src, dest string) error
+// ImageRelocator relocates an images to another registry.
+type ImageRelocator interface {
+	Relocate(rootPath, prefix string, images []image.Name) error
 }

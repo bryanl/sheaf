@@ -8,12 +8,23 @@ package bundle
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/bryanl/sheaf/pkg/codec"
+	"github.com/bryanl/sheaf/pkg/images"
+	"github.com/bryanl/sheaf/pkg/manifest"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
+
+// DefaultBundleFactory is the default bundle factory.
+func DefaultBundleFactory(uri string) (sheaf.Bundle, error) {
+	return NewBundle(uri)
+}
 
 // Option is a functional option for configuring Bundle.
 type Option func(b Bundle) Bundle
@@ -26,14 +37,24 @@ func CodecOption(c sheaf.Codec) Option {
 	}
 }
 
-// Bundle is a bundle that lives on a filesystem.
-type Bundle struct {
-	rootPath string
-	config   sheaf.BundleConfig
-	codec    sheaf.Codec
+// ManifestsDirOption sets the location to the bundle's manifest.
+func ManifestsDirOption(p string) Option {
+	return func(b Bundle) Bundle {
+		b.manifestsDir = p
+		return b
+	}
 }
 
-var _ sheaf.BundleService = &Bundle{}
+// Bundle is a bundle that lives on a filesystem.
+type Bundle struct {
+	rootPath     string
+	config       sheaf.BundleConfig
+	codec        sheaf.Codec
+	manifestsDir string
+	out          io.Writer
+}
+
+var _ sheaf.Bundle = &Bundle{}
 
 // NewBundle creates an instance of Bundle. `rootPath` points to root directory
 // of the bundle on the filesystem.
@@ -54,6 +75,14 @@ func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
 
 	if b.codec == nil {
 		b.codec = codec.Default
+	}
+
+	if b.manifestsDir == "" {
+		b.manifestsDir = filepath.Join(b.rootPath, "app", "manifests")
+	}
+
+	if b.out == nil {
+		b.out = os.Stdout
 	}
 
 	return &b, nil
@@ -104,4 +133,90 @@ func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
 // Codec is the codec for the bundle.
 func (b *Bundle) Codec() sheaf.Codec {
 	return b.codec
+}
+
+// Manifests returns a list of paths to manifests in the bundle.
+func (b *Bundle) Manifests() ([]sheaf.BundleManifest, error) {
+	entries, err := ioutil.ReadDir(b.manifestsDir)
+	if err != nil {
+		return nil, fmt.Errorf("read manifests dir %q: %w", b.manifestsDir, err)
+	}
+
+	var list []sheaf.BundleManifest
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		manifestPath := filepath.Join(b.manifestsDir, entry.Name())
+
+		data, err := ioutil.ReadFile(manifestPath)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read manifest %q: %w", manifestPath, err)
+		}
+
+		bm := sheaf.BundleManifest{
+			ID:   manifestPath,
+			Data: data,
+		}
+
+		list = append(list, bm)
+	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ID < list[j].ID
+	})
+
+	return list, nil
+}
+
+// Images returns images in the bundle.
+func (b *Bundle) Images() (images.Set, error) {
+	seen := images.Empty
+
+	config := b.Config()
+	bundleImages := config.Images
+	printImageTree("bundle.json", bundleImages.Strings(), os.Stdout)
+	fmt.Fprintln(b.out)
+
+	seen = seen.Union(bundleImages)
+
+	bundleManifests, err := b.Manifests()
+	if err != nil {
+		return images.Empty, err
+	}
+
+	for _, bundleManifest := range bundleManifests {
+
+		list, err := manifest.ContainerImages(bundleManifest.ID, config.UserDefinedImages)
+		if err != nil {
+			return images.Empty, fmt.Errorf("find container images for %s: %w", bundleManifest, err)
+		}
+
+		names := list.Strings()
+		if len(names) < 1 {
+			continue
+		}
+
+		p := strings.TrimPrefix(bundleManifest.ID, b.manifestsDir+"/")
+		printImageTree(p, names, b.out)
+		fmt.Fprintln(b.out)
+
+		seen = seen.Union(list)
+	}
+
+	return seen, nil
+}
+
+func printImageTree(source string, imageNames []string, out io.Writer) {
+	fmt.Fprintln(out, source)
+	for i, name := range imageNames {
+		prefix := treeItem
+		if i == len(imageNames)-1 {
+			prefix = treeItemLast
+		}
+
+		fmt.Fprintf(out, "%s %s\n", prefix, name)
+	}
 }

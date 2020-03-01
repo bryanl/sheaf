@@ -4,20 +4,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package sheaf
+package bundle_test
 
 import (
 	"strings"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/bryanl/sheaf/pkg/archiver"
+	"github.com/bryanl/sheaf/pkg/bundle"
 )
 
 func TestGenManifest(t *testing.T) {
-	mg := NewManifestGenerator(
-		ManifestGeneratorArchivePath("testdata/gen-manifest.tgz"), // single manifest, image layout omitted
-		ManifestGeneratorPrefix("prefix.com"),
-	)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	a := archiver.Default
+
+	mg := bundle.NewManifestGenerator(
+		bundle.ManifestGeneratorArchivePath("testdata/gen-manifest.tgz"), // single manifest, image layout omitted
+		bundle.ManifestGeneratorPrefix("prefix.com"),
+		bundle.ManifestGeneratorArchiver(a))
 
 	b := &strings.Builder{}
 	err := mg.Generate(b)

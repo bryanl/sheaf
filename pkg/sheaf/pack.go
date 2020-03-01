@@ -9,40 +9,39 @@ package sheaf
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 // PackConfig is configuration for Pack.
 type PackConfig struct {
-	Path string
+	Packer        Packer
+	BundleURI     string
+	BundleFactory BundleFactory
 }
 
 // Pack packs a bundle.
 func Pack(config PackConfig) error {
-	bundle, err := OpenBundle(config.Path)
+	bundle, err := config.BundleFactory(config.BundleURI)
 	if err != nil {
-		return fmt.Errorf("load bundle: %w", err)
+		return fmt.Errorf("open bundle: %w", err)
+	}
+
+	bundleConfig := bundle.Config()
+	dest := bundleConfig.Filename(".")
+
+	f, err := os.Create(dest)
+	if err != nil {
+		return fmt.Errorf("create archive file: %w", err)
 	}
 
 	defer func() {
-		if cErr := bundle.Close(); cErr != nil {
-			log.Printf("unable to close bundle: %v", err)
+		if cErr := f.Close(); cErr != nil {
+			log.Printf("close archive file: %v", err)
 		}
 	}()
 
-	imgs, err := bundle.Images()
-	if err != nil {
-		return fmt.Errorf("collect images from manifest: %w", err)
-	}
-
-	for _, ref := range imgs.Slice() {
-		fmt.Printf("Adding %s to bundle\n", ref)
-		if _, err := bundle.Layout.Add(ref); err != nil {
-			return fmt.Errorf("add %s: %w", ref, err)
-		}
-	}
-
-	if err := bundle.Write(); err != nil {
-		return fmt.Errorf("write bundle archive: %w", err)
+	if err := config.Packer.Pack(bundle, f); err != nil {
+		return fmt.Errorf("pack archive: %w", err)
 	}
 
 	return nil

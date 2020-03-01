@@ -1,0 +1,8 @@
+apiVersion: example.dev/v1
+kind: Foo
+metadata:
+  name: foo
+spec:
+  images:
+  - gcr.io/example/image1
+  - gcr.io/example/image2

@@ -34,7 +34,7 @@ func TestArtifactsService_Index(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	bundleService := mocks.NewMockBundleService(controller)
+	bundleService := mocks.NewMockBundle(controller)
 	bundleService.EXPECT().Path().Return(dir)
 
 	as := NewArtifactsService(bundleService)

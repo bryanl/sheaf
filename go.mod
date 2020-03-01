@@ -14,7 +14,6 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/opencontainers/runc v0.1.1 // indirect
-	github.com/pivotal/go-ape v0.0.0-20200224111603-3ada71e48e45
 	github.com/pivotal/image-relocation v0.0.0-20200211102444-66f85181c18c
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/cobra v0.0.5
