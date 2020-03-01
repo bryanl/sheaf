@@ -12,7 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/bundle"
+	"github.com/bryanl/sheaf/pkg/fs"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -20,10 +20,10 @@ import (
 func NewPackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pack",
-		Short: "pack a bundle",
+		Short: "pack a fs",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				return fmt.Errorf("requires path to bundle directory")
+				return fmt.Errorf("requires path to fs directory")
 			}
 
 			return nil
@@ -31,8 +31,8 @@ func NewPackCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			config := sheaf.PackConfig{
 				BundleURI:     args[0],
-				BundleFactory: bundle.DefaultBundleFactory,
-				Packer:        bundle.NewPacker(os.Stdout),
+				BundleFactory: fs.DefaultBundleFactory,
+				Packer:        fs.NewPacker(os.Stdout),
 			}
 			return sheaf.Pack(config)
 		},

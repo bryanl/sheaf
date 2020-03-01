@@ -15,7 +15,7 @@ type ArchiveListImagesConfig struct {
 	Bundle Bundle
 }
 
-// ArchiveListImages lists images from a bundle.
+// ArchiveListImages lists images from a fs.
 func ArchiveListImages(config ArchiveListImagesConfig) error {
 	is := config.Bundle.Artifacts().Image()
 

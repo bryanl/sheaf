@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 	"github.com/pivotal/image-relocation/pkg/registry/ggcr"
 )
 
-//go:generate mockgen -destination=../mocks/mock_layout.go -package mocks github.com/bryanl/sheaf/pkg/bundle Layout
+//go:generate mockgen -destination=../mocks/mock_layout.go -package mocks github.com/bryanl/sheaf/pkg/fs Layout
 
 // LayoutFactory creates Layout given a root path.
 type LayoutFactory func(root string) (Layout, error)

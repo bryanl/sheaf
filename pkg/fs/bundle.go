@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle
+package fs
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ import (
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
-// DefaultBundleFactory is the default bundle factory.
+// DefaultBundleFactory is the default fs factory.
 func DefaultBundleFactory(uri string) (sheaf.Bundle, error) {
 	return NewBundle(uri)
 }
@@ -29,7 +29,7 @@ func DefaultBundleFactory(uri string) (sheaf.Bundle, error) {
 // Option is a functional option for configuring Bundle.
 type Option func(b Bundle) Bundle
 
-// CodecOption sets the codec for the bundle.
+// CodecOption sets the codec for the fs.
 func CodecOption(c sheaf.Codec) Option {
 	return func(b Bundle) Bundle {
 		b.codec = c
@@ -37,7 +37,7 @@ func CodecOption(c sheaf.Codec) Option {
 	}
 }
 
-// ManifestsDirOption sets the location to the bundle's manifest.
+// ManifestsDirOption sets the location to the fs's manifest.
 func ManifestsDirOption(p string) Option {
 	return func(b Bundle) Bundle {
 		b.manifestsDir = p
@@ -45,7 +45,7 @@ func ManifestsDirOption(p string) Option {
 	}
 }
 
-// Bundle is a bundle that lives on a filesystem.
+// Bundle is a fs that lives on a filesystem.
 type Bundle struct {
 	rootPath     string
 	config       sheaf.BundleConfig
@@ -57,11 +57,11 @@ type Bundle struct {
 var _ sheaf.Bundle = &Bundle{}
 
 // NewBundle creates an instance of Bundle. `rootPath` points to root directory
-// of the bundle on the filesystem.
+// of the fs on the filesystem.
 func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
 	config, err := loadBundleConfig(rootPath)
 	if err != nil {
-		return nil, fmt.Errorf("load bundle config: %w", err)
+		return nil, fmt.Errorf("load fs config: %w", err)
 	}
 
 	b := Bundle{
@@ -88,17 +88,17 @@ func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
 	return &b, nil
 }
 
-// Artifacts returns an artifacts service for the bundle.
+// Artifacts returns an artifacts service for the fs.
 func (b *Bundle) Artifacts() sheaf.ArtifactsService {
 	return NewArtifactsService(b)
 }
 
-// Path returns the root path of the bundle.
+// Path returns the root path of the fs.
 func (b *Bundle) Path() string {
 	return b.rootPath
 }
 
-// Config returns the configuration for the bundle.
+// Config returns the configuration for the fs.
 func (b *Bundle) Config() sheaf.BundleConfig {
 	return b.config
 }
@@ -110,7 +110,7 @@ func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return bundleConfig, fmt.Errorf("bundle directory %q does not exist", path)
+			return bundleConfig, fmt.Errorf("fs directory %q does not exist", path)
 		}
 
 		return bundleConfig, err
@@ -124,18 +124,18 @@ func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
 
 	bundleConfig, err = sheaf.LoadBundleConfig(bundleConfigFilename)
 	if err != nil {
-		return bundleConfig, fmt.Errorf("load bundle config: %w", err)
+		return bundleConfig, fmt.Errorf("load fs config: %w", err)
 	}
 
 	return bundleConfig, err
 }
 
-// Codec is the codec for the bundle.
+// Codec is the codec for the fs.
 func (b *Bundle) Codec() sheaf.Codec {
 	return b.codec
 }
 
-// Manifests returns a list of paths to manifests in the bundle.
+// Manifests returns a list of paths to manifests in the fs.
 func (b *Bundle) Manifests() ([]sheaf.BundleManifest, error) {
 	entries, err := ioutil.ReadDir(b.manifestsDir)
 	if err != nil {
@@ -171,13 +171,13 @@ func (b *Bundle) Manifests() ([]sheaf.BundleManifest, error) {
 	return list, nil
 }
 
-// Images returns images in the bundle.
+// Images returns images in the fs.
 func (b *Bundle) Images() (images.Set, error) {
 	seen := images.Empty
 
 	config := b.Config()
 	bundleImages := config.Images
-	printImageTree("bundle.json", bundleImages.Strings(), os.Stdout)
+	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), os.Stdout)
 	fmt.Fprintln(b.out)
 
 	seen = seen.Union(bundleImages)

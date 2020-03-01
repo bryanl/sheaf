@@ -16,25 +16,25 @@ import (
 //go:generate mockgen -destination=../mocks/mock_image_service.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ImageService
 //go:generate mockgen -destination=../mocks/mock_image_relocator.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ImageRelocator
 
-// BundleImage is an image in a bundle.
+// BundleImage is an image in a fs.
 type BundleImage struct {
 	Name      string `json:"name"`
 	Digest    string `json:"digest"`
 	MediaType string `json:"mediaType"`
 }
 
-// ImageService returns a list of bundle artifact images.
+// ImageService returns a list of fs artifact images.
 type ImageService interface {
 	List() ([]BundleImage, error)
 }
 
-// ArtifactsService interacts with bundle artifacts.
+// ArtifactsService interacts with fs artifacts.
 type ArtifactsService interface {
 	Index() ([]byte, error)
 	Image() ImageService
 }
 
-// Packer packs a bundle and writes it to a writer.
+// Packer packs a fs and writes it to a writer.
 type Packer interface {
 	Pack(b Bundle, w io.Writer) error
 }

@@ -21,10 +21,10 @@ func NewAddManifestCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add-manifest",
-		Short: "add manifest to bundle",
+		Short: "add manifest to fs",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				return fmt.Errorf("requires bundle path")
+				return fmt.Errorf("requires fs path")
 			}
 			return nil
 		},

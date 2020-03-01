@@ -30,9 +30,9 @@ func ManifestAdderForce(force bool) ManifestAdderOption {
 // URLFetcher fetches a URL and returns a read closer, the name of the file, or a possible error.
 type URLFetcher func(string) (io.ReadCloser, string, error)
 
-// ManifestAdder adds manifests to a bundle.
+// ManifestAdder adds manifests to a fs.
 type ManifestAdder struct {
-	// BundlePath is the path to the bundle.
+	// BundlePath is the path to the fs.
 	BundlePath string
 	// Force is set to true if files can be overwritten.
 	Force bool
@@ -43,7 +43,7 @@ type ManifestAdder struct {
 // NewManifestAdder creates an instance of ManifestAdder.
 func NewManifestAdder(bundlePath string, options ...ManifestAdderOption) (*ManifestAdder, error) {
 	if err := ensureBundlePath(bundlePath); err != nil {
-		return nil, fmt.Errorf("ensure bundle path %q exists: %w", bundlePath, err)
+		return nil, fmt.Errorf("ensure fs path %q exists: %w", bundlePath, err)
 	}
 
 	ma := ManifestAdder{

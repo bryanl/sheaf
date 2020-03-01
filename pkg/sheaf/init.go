@@ -17,7 +17,7 @@ import (
 // IniterOption is an option for configuring Initer.
 type IniterOption func(i Initer) Initer
 
-// IniterOptionBundlePath configures the bundle path for Initer.
+// IniterOptionBundlePath configures the fs path for Initer.
 func IniterOptionBundlePath(p string) IniterOption {
 	return func(i Initer) Initer {
 		i.BundlePath = p
@@ -41,7 +41,7 @@ func IniterOptionVersion(name string) IniterOption {
 	}
 }
 
-// Initer initializes a bundle.
+// Initer initializes a fs.
 type Initer struct {
 	BundlePath string
 	Name       string
@@ -59,7 +59,7 @@ func NewIniter(options ...IniterOption) *Initer {
 	return &i
 }
 
-// Init initializes a bundle.
+// Init initializes a fs.
 func (i *Initer) Init() error {
 	if i.Name == "" {
 		return fmt.Errorf("name is blank")
@@ -84,7 +84,7 @@ func (i *Initer) Init() error {
 
 	defer func() {
 		if cErr := f.Close(); cErr != nil {
-			log.Printf("close bundle config: %v", err)
+			log.Printf("close fs config: %v", err)
 		}
 	}()
 

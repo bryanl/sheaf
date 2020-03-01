@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package bundle_test
+package fs_test
 
 import (
 	"strings"
@@ -14,22 +14,22 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/bryanl/sheaf/pkg/archiver"
-	"github.com/bryanl/sheaf/pkg/bundle"
+	"github.com/bryanl/sheaf/pkg/fs"
 )
 
-func TestGenManifest(t *testing.T) {
+func TestManifestShower_Show(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	a := archiver.Default
 
-	mg := bundle.NewManifestGenerator(
-		bundle.ManifestGeneratorArchivePath("testdata/gen-manifest.tgz"), // single manifest, image layout omitted
-		bundle.ManifestGeneratorPrefix("prefix.com"),
-		bundle.ManifestGeneratorArchiver(a))
+	mg := fs.NewManifestShower(
+		fs.ManifestShowerArchivePath("testdata/gen-manifest.tgz"), // single manifest, image layout omitted
+		fs.ManifestShowerPrefix("prefix.com"),
+		fs.ManifestShowerArchiver(a))
 
 	b := &strings.Builder{}
-	err := mg.Generate(b)
+	err := mg.Show(b)
 	require.NoError(t, err)
 
 	require.Equal(t, `apiVersion: apps/v1

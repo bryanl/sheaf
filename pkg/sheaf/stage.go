@@ -33,23 +33,23 @@ func Stage(config StageConfig) error {
 
 	defer func() {
 		if rErr := os.RemoveAll(unpackDir); rErr != nil {
-			log.Printf("remove temporary bundle path %q: %v", unpackDir, rErr)
+			log.Printf("remove temporary fs path %q: %v", unpackDir, rErr)
 		}
 	}()
 
 	if err := config.Archiver.Unarchive(config.ArchivePath, unpackDir); err != nil {
-		return fmt.Errorf("unpack bundle: %w", err)
+		return fmt.Errorf("unpack fs: %w", err)
 	}
 
 	bundle, err := config.BundleFactory(unpackDir)
 	if err != nil {
-		return fmt.Errorf("open bundle: %w", err)
+		return fmt.Errorf("open fs: %w", err)
 	}
 
 	fmt.Println("Locating images in archive")
 	list, err := bundle.Images()
 	if err != nil {
-		return fmt.Errorf("load images from bundle: %w", err)
+		return fmt.Errorf("load images from fs: %w", err)
 	}
 
 	fmt.Println("Moving images to new location")
