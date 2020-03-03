@@ -30,6 +30,15 @@ var (
 
 // targz creates a gzipped tar archive. Assume src is a directory.
 func targz(src string, w io.Writer) error {
+	fi, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	if !fi.IsDir() {
+		return fmt.Errorf("%s is not a directory", src)
+	}
+
 	export, err := archive.TarWithOptions(src, tarOptions)
 	if err != nil {
 		return fmt.Errorf("create tar ball: %w", err)

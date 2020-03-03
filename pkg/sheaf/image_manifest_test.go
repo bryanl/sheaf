@@ -13,17 +13,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadFromIndex(t *testing.T) {
+func TestLoadImageManifestFromIndex(t *testing.T) {
 	tests := []struct {
 		name     string
 		index    string
 		wantErr  bool
-		expected []Image
+		expected []ImageManifest
 	}{
 		{
 			name:  "valid archive",
 			index: "index.json",
-			expected: []Image{
+			expected: []ImageManifest{
 				{
 					MediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
 					Size:      1412,
@@ -40,7 +40,7 @@ func TestLoadFromIndex(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			index := filepath.Join("testdata", tt.index)
 
-			got, err := LoadFromIndex(index)
+			got, err := LoadImageManifestFromIndex(index)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
