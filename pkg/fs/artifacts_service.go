@@ -37,7 +37,7 @@ func (s *ArtifactsService) Index() ([]byte, error) {
 	return ioutil.ReadFile(index)
 }
 
-// Image an an image service for interacting with images in the artifacts.
+// Image is an image service for interacting with images in the artifacts.
 func (s *ArtifactsService) Image() sheaf.ImageService {
 	return NewImageService(s)
 }

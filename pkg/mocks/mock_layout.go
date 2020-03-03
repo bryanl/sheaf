@@ -5,10 +5,9 @@
 package mocks
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	image "github.com/pivotal/image-relocation/pkg/image"
+	reflect "reflect"
 )
 
 // MockLayout is a mock of Layout interface

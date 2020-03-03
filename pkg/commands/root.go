@@ -23,7 +23,8 @@ func NewRootCommand() *cobra.Command {
 		NewPackCommand(),
 		NewStageCommand(),
 		NewArchiveCommand(),
-		NewManifestCommand())
+		NewManifestCommand(),
+		NewConfigCommand())
 
 	return cmd
 }

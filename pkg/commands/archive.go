@@ -20,7 +20,9 @@ func NewArchiveCommand() *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	cmd.AddCommand(archive.NewListImages())
+	cmd.AddCommand(
+		archive.NewListImages(),
+		archive.NewPushCommand())
 
 	return cmd
 }
