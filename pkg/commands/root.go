@@ -6,7 +6,9 @@
 
 package commands
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 // NewRootCommand creates a root command.
 func NewRootCommand() *cobra.Command {
@@ -18,7 +20,6 @@ func NewRootCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		NewInitCommand(),
-		NewAddManifestCommand(),
 		NewAddImageCommand(),
 		NewPackCommand(),
 		NewStageCommand(),

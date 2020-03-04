@@ -92,10 +92,10 @@ func (mr *MockBundleMockRecorder) Images() *gomock.Call {
 }
 
 // Manifests mocks base method
-func (m *MockBundle) Manifests() ([]sheaf.BundleManifest, error) {
+func (m *MockBundle) Manifests() (sheaf.ManifestService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Manifests")
-	ret0, _ := ret[0].([]sheaf.BundleManifest)
+	ret0, _ := ret[0].(sheaf.ManifestService)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

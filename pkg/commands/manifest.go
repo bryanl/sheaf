@@ -21,7 +21,8 @@ func NewManifestCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		manifest.NewShowCommand())
+		manifest.NewShowCommand(),
+		manifest.NewAddCommand())
 
 	return cmd
 }

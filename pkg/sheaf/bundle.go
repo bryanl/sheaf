@@ -16,6 +16,7 @@ import (
 )
 
 //go:generate mockgen -destination=../mocks/mock_bundle.go -package mocks github.com/bryanl/sheaf/pkg/sheaf Bundle
+//go:generate mockgen -destination=../mocks/mock_manifest_service.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ManifestService
 
 // ManifestGenerator generates manifests.
 type ManifestGenerator interface {
@@ -31,8 +32,13 @@ type Bundle interface {
 	Path() string
 	Config() BundleConfig
 	Artifacts() ArtifactsService
-	Manifests() ([]BundleManifest, error)
+	Manifests() (ManifestService, error)
 	Images() (images.Set, error)
+}
+
+type ManifestService interface {
+	List() ([]BundleManifest, error)
+	Add(manifestPath string) error
 }
 
 // BundleManifest describes a manifest in a fs.
