@@ -34,17 +34,21 @@ func (m *MockManifestService) EXPECT() *MockManifestServiceMockRecorder {
 }
 
 // Add mocks base method
-func (m *MockManifestService) Add(arg0 string) error {
+func (m *MockManifestService) Add(arg0 ...string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", arg0)
+	varargs := []interface{}{}
+	for _, a := range arg0 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Add", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Add indicates an expected call of Add
-func (mr *MockManifestServiceMockRecorder) Add(arg0 interface{}) *gomock.Call {
+func (mr *MockManifestServiceMockRecorder) Add(arg0 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockManifestService)(nil).Add), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockManifestService)(nil).Add), arg0...)
 }
 
 // List mocks base method

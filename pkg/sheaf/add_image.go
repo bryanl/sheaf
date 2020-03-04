@@ -8,6 +8,7 @@ package sheaf
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/bryanl/sheaf/pkg/images"
 )
@@ -44,4 +45,21 @@ func (ia *ImageAdder) Add(imageStrs []string) error {
 	bc.Images = bc.Images.Union(im)
 
 	return StoreBundleConfig(bc, bcPath)
+}
+
+func ensureBundlePath(bundlePath string) error {
+	fi, err := os.Stat(bundlePath)
+	if err == nil {
+		if !fi.IsDir() {
+			return fmt.Errorf("is not a directory")
+		}
+
+		return nil
+	}
+
+	if !os.IsNotExist(err) {
+		return fmt.Errorf("is invalid: %w", err)
+	}
+
+	return nil
 }

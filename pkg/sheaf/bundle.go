@@ -36,9 +36,10 @@ type Bundle interface {
 	Images() (images.Set, error)
 }
 
+// ManifestService is a service for interacting with manifests.
 type ManifestService interface {
 	List() ([]BundleManifest, error)
-	Add(manifestPath string) error
+	Add(manifestURIs ...string) error
 }
 
 // BundleManifest describes a manifest in a fs.
