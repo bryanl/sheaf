@@ -77,6 +77,7 @@ func (w *writer) Write(bundlePath string, dest string) error {
 
 	r.Header("Write configuration to registry")
 
+	fmt.Println("bundle path is", bundlePath)
 	archiveBytes, err := w.createArchive(bundlePath)
 	if err != nil {
 		return err

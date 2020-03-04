@@ -21,7 +21,8 @@ func NewConfigCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		config.NewPushCommand())
+		config.NewPushCommand(),
+		config.NewPullCommand())
 
 	return cmd
 }

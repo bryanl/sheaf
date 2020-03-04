@@ -15,6 +15,8 @@ var (
 type Reporter interface {
 	// Header prints a header.
 	Header(string)
+	// Header prints a header from a formatted string.
+	Headerf(format string, a ...interface{})
 	// Report creates report output.
 	Report(format string)
 	// Reportf creates formatted report output.
