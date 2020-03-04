@@ -20,7 +20,7 @@ import (
 func NewPackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pack",
-		Short: "pack a fs",
+		Short: "Pack a bundle",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return fmt.Errorf("requires path to fs directory")

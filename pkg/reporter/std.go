@@ -50,6 +50,10 @@ func (r std) Header(text string) {
 	fmt.Fprintln(r.w, text)
 }
 
+func (r std) Headerf(format string, a ...interface{}) {
+	r.Header(fmt.Sprintf(format, a...))
+}
+
 func (r std) Report(text string) {
 	if text[len(text)-1:] == "\n" {
 		result := ""

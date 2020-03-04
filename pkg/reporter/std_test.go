@@ -26,6 +26,17 @@ func Test_std_Header(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
+func Test_std_Headerf(t *testing.T) {
+	var b bytes.Buffer
+
+	r := newStd(stdOptionOutput(&b))
+	r.Headerf("hello: %s", "world")
+
+	actual := b.String()
+	expected := "hello: world\n"
+	require.Equal(t, expected, actual)
+}
+
 func Test_std_Report(t *testing.T) {
 	cases := []struct {
 		name   string

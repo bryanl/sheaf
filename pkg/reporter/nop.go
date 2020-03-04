@@ -15,6 +15,10 @@ var _ Reporter = &Nop{}
 func (n Nop) Header(string) {
 }
 
+// Headerf implements Reporter#Headerf.
+func (n Nop) Headerf(format string, a ...interface{}) {
+}
+
 // Report implements Reporter#Report.
 func (n Nop) Report(format string) {
 }
