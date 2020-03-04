@@ -74,7 +74,11 @@ func genBundle(t *testing.T, controller *gomock.Controller) *mocks.MockBundle {
 			Data: slurpData(t, filepath.Join("testdata", "manifests", "deploy.yaml")),
 		},
 	}
-	bundle.EXPECT().Manifests().Return(bundleManifests, nil).AnyTimes()
+
+	m := mocks.NewMockManifestService(controller)
+	m.EXPECT().List().Return(bundleManifests, nil).AnyTimes()
+
+	bundle.EXPECT().Manifests().Return(m, nil).AnyTimes()
 
 	imageList, err := images.New([]string{"image"})
 	require.NoError(t, err)

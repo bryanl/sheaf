@@ -9,10 +9,8 @@ package fs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/bryanl/sheaf/pkg/codec"
@@ -59,6 +57,11 @@ var _ sheaf.Bundle = &Bundle{}
 // NewBundle creates an instance of Bundle. `rootPath` points to root directory
 // of the fs on the filesystem.
 func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
+	rootPath, err := locateRootDir(rootPath)
+	if err != nil {
+		return nil, fmt.Errorf("locate bundle root directory")
+	}
+
 	config, err := loadBundleConfig(rootPath)
 	if err != nil {
 		return nil, fmt.Errorf("load fs config: %w", err)
@@ -106,6 +109,11 @@ func (b *Bundle) Config() sheaf.BundleConfig {
 func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
 	bundleConfig := sheaf.BundleConfig{}
 
+	path, err := locateRootDir(path)
+	if err != nil {
+		return bundleConfig, err
+	}
+
 	// check if directory exists
 	fi, err := os.Stat(path)
 	if err != nil {
@@ -135,40 +143,52 @@ func (b *Bundle) Codec() sheaf.Codec {
 	return b.codec
 }
 
-// Manifests returns a list of paths to manifests in the fs.
-func (b *Bundle) Manifests() ([]sheaf.BundleManifest, error) {
-	entries, err := ioutil.ReadDir(b.manifestsDir)
+func (b *Bundle) Manifests() (sheaf.ManifestService, error) {
+	manifestsDir, err := locateManifestsDir(b.rootPath)
 	if err != nil {
-		return nil, fmt.Errorf("read manifests dir %q: %w", b.manifestsDir, err)
+		return nil, fmt.Errorf("locate manifest directory: %w", err)
 	}
 
-	var list []sheaf.BundleManifest
+	return NewManifestService(manifestsDir)
+}
 
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-
-		manifestPath := filepath.Join(b.manifestsDir, entry.Name())
-
-		data, err := ioutil.ReadFile(manifestPath)
-		if err != nil {
-			return nil, fmt.Errorf("unable to read manifest %q: %w", manifestPath, err)
-		}
-
-		bm := sheaf.BundleManifest{
-			ID:   manifestPath,
-			Data: data,
-		}
-
-		list = append(list, bm)
+func locateRootDir(in string) (string, error) {
+	in, err := filepath.Abs(in)
+	if err != nil {
+		return "", err
 	}
 
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].ID < list[j].ID
-	})
+	configPath := filepath.Join(in, sheaf.BundleConfigFilename)
+	if _, err := os.Stat(configPath); err != nil {
+		if !os.IsNotExist(err) {
+			return "", err
+		}
 
-	return list, nil
+		in = filepath.Clean(in)
+		if strings.HasSuffix(in, string(filepath.Separator)) {
+			return "", fmt.Errorf("bundle config not found")
+		}
+
+		dir := filepath.Dir(in)
+		return locateRootDir(dir)
+	}
+
+	return in, nil
+}
+
+// locate a manifest directory given a path.
+// TODO: ensure this works on windows
+func locateManifestsDir(in string) (string, error) {
+	rootDir, err := locateRootDir(in)
+	if err != nil {
+		return "", fmt.Errorf("locate bundle root directory: %w", err)
+	}
+
+	return genManifestDir(rootDir), nil
+}
+
+func genManifestDir(rootPath string) string {
+	return filepath.Join(rootPath, "app", "manifests")
 }
 
 // Images returns images in the fs.
@@ -182,7 +202,12 @@ func (b *Bundle) Images() (images.Set, error) {
 
 	seen = seen.Union(bundleImages)
 
-	bundleManifests, err := b.Manifests()
+	m, err := b.Manifests()
+	if err != nil {
+		return images.Empty, err
+	}
+
+	bundleManifests, err := m.List()
 	if err != nil {
 		return images.Empty, err
 	}

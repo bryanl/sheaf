@@ -127,7 +127,12 @@ func (p Packer) stageManifests(dir string, b sheaf.Bundle) error {
 		return fmt.Errorf("create manifests directory: %w", err)
 	}
 
-	bundleManifests, err := b.Manifests()
+	m, err := b.Manifests()
+	if err != nil {
+		return err
+	}
+
+	bundleManifests, err := m.List()
 	if err != nil {
 		return fmt.Errorf("get manifest paths: %w", err)
 	}

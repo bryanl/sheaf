@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Microsoft/hcsshim v0.8.7 // indirect
-	github.com/containerd/continuity v0.0.0-20200107194136-26c1120b8d41 // indirect
+	github.com/containerd/continuity v0.0.0-20200107194136-26c1120b8d41
 	github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492 // indirect
 	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
@@ -13,6 +13,7 @@ require (
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/google/go-containerregistry v0.0.0-20191015185424-71da34e4d9b3
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/onsi/ginkgo v1.10.1
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/pivotal/image-relocation v0.0.0-20200211102444-66f85181c18c
