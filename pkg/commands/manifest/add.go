@@ -34,10 +34,8 @@ func NewAddCommand() *cobra.Command {
 				return err
 			}
 
-			for _, file := range files {
-				if err := m.Add(file); err != nil {
-					return err
-				}
+			if err := m.Add(files...); err != nil {
+				return err
 			}
 
 			return nil

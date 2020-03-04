@@ -33,14 +33,6 @@ func ManifestShowerPrefix(p string) ManifestShowerOption {
 	}
 }
 
-// ManifestShowerArchivePath sets the fs archive path.
-func ManifestShowerArchivePath(p string) ManifestShowerOption {
-	return func(mg ManifestShower) ManifestShower {
-		mg.ArchivePath = p
-		return mg
-	}
-}
-
 // ManifestShowerArchiver sets the archiver for ManifestShower.
 func ManifestShowerArchiver(a sheaf.Archiver) ManifestShowerOption {
 	return func(mg ManifestShower) ManifestShower {
@@ -51,14 +43,16 @@ func ManifestShowerArchiver(a sheaf.Archiver) ManifestShowerOption {
 
 // ManifestShower generates manifests from a fs archive.
 type ManifestShower struct {
-	ArchivePath string
-	Prefix      string
-	Archiver    sheaf.Archiver
+	Path     string
+	Prefix   string
+	Archiver sheaf.Archiver
 }
 
 // NewManifestShower creates an instance of ManifestShower.
-func NewManifestShower(options ...ManifestShowerOption) *ManifestShower {
-	mg := ManifestShower{}
+func NewManifestShower(p string, options ...ManifestShowerOption) *ManifestShower {
+	mg := ManifestShower{
+		Path: p,
+	}
 
 	for _, option := range options {
 		mg = option(mg)
@@ -69,27 +63,42 @@ func NewManifestShower(options ...ManifestShowerOption) *ManifestShower {
 
 // Show generates the manifests contained in a fs archive to the supplied writer.
 func (mg *ManifestShower) Show(w io.Writer) error {
-	tmpDir, err := ioutil.TempDir("", "sheaf")
+	bundleDir := mg.Path
+
+	fi, err := os.Stat(bundleDir)
 	if err != nil {
-		return fmt.Errorf("create temporary directory: %w", err)
+		return err
 	}
 
-	defer func() {
-		if rErr := os.RemoveAll(tmpDir); rErr != nil {
-			log.Printf("remove generator temporary directory: %v", rErr)
+	if !fi.IsDir() {
+		// assume path is an archive
+		dir, err := mg.extractArchive(mg.Path)
+		if err != nil {
+			return err
 		}
-	}()
 
-	if err := mg.Archiver.Unarchive(mg.ArchivePath, tmpDir); err != nil {
-		return fmt.Errorf("unpack fs: %w", err)
+		bundleDir = dir
+
+		defer func() {
+			if rErr := os.RemoveAll(dir); rErr != nil {
+				log.Printf("unable to remove temporary directory: %v", err)
+			}
+		}()
+	} else {
+		bundleDir, err = locateRootDir(bundleDir)
+		if err != nil {
+			return err
+		}
 	}
 
-	manifestsPath := filepath.Join(tmpDir, "app", "manifests")
+	manifestsPath := filepath.Join(bundleDir, "app", "manifests")
 
-	config, err := loadBundleConfig(tmpDir)
+	b, err := NewBundle(bundleDir)
 	if err != nil {
-		return fmt.Errorf("read fs configuration: %w", err)
+		return err
 	}
+
+	config := b.Config()
 
 	entries, err := ioutil.ReadDir(manifestsPath)
 	if err != nil {
@@ -138,4 +147,20 @@ func (mg *ManifestShower) Show(w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (mg *ManifestShower) extractArchive(archivePath string) (string, error) {
+	tmpDir, err := ioutil.TempDir("", "sheaf")
+	if err != nil {
+		return "", fmt.Errorf("create temporary directory: %w", err)
+	}
+
+	if err := mg.Archiver.Unarchive(archivePath, tmpDir); err != nil {
+		if rErr := os.RemoveAll(tmpDir); rErr != nil {
+			log.Printf("remove temporary directory: %v", rErr)
+		}
+		return "", fmt.Errorf("unpack fs: %w", err)
+	}
+
+	return tmpDir, nil
 }

@@ -22,9 +22,16 @@ func NewShowCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
 		Short: "prints manifest to standard out",
+		Long: `Print manifest to standard out. With no argument, it will assume you in a bundle directory
+or a descendent. Argument can either be a bundle directory or a bundle archive.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			p, _ := os.Getwd()
+			if len(args) > 0 {
+				p = args[0]
+			}
+
 			mg := fs.NewManifestShower(
-				fs.ManifestShowerArchivePath(args[0]),
+				p,
 				fs.ManifestShowerPrefix(prefix),
 				fs.ManifestShowerArchiver(archiver.Default))
 			return mg.Show(os.Stdout)

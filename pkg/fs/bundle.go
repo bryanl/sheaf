@@ -143,6 +143,7 @@ func (b *Bundle) Codec() sheaf.Codec {
 	return b.codec
 }
 
+// Manifests returns the manifest service for the bundle.
 func (b *Bundle) Manifests() (sheaf.ManifestService, error) {
 	manifestsDir, err := locateManifestsDir(b.rootPath)
 	if err != nil {
