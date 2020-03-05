@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 // PackConfig is configuration for Pack.
@@ -26,8 +27,7 @@ func Pack(config PackConfig) error {
 		return fmt.Errorf("open fs: %w", err)
 	}
 
-	bundleConfig := bundle.Config()
-	dest := bundleConfig.Filename(".")
+	dest := filepath.Join(bundle.Path(), BundleConfigFilename)
 
 	f, err := os.Create(dest)
 	if err != nil {

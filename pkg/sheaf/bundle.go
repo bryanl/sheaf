@@ -7,10 +7,7 @@
 package sheaf
 
 import (
-	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 
 	"github.com/bryanl/sheaf/pkg/images"
 )
@@ -46,31 +43,4 @@ type ManifestService interface {
 type BundleManifest struct {
 	ID   string
 	Data []byte
-}
-
-func loadBundleConfig(path string) (BundleConfig, string, error) {
-	bundleConfig := BundleConfig{}
-
-	// check if directory exists
-	fi, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return bundleConfig, "", fmt.Errorf("fs directory %q does not exist", path)
-		}
-
-		return bundleConfig, "", err
-	}
-
-	if !fi.IsDir() {
-		return bundleConfig, "", fmt.Errorf("%q is not a directory", path)
-	}
-
-	bundleConfigFilename := filepath.Join(path, BundleConfigFilename)
-
-	bundleConfig, err = LoadBundleConfig(bundleConfigFilename)
-	if err != nil {
-		return bundleConfig, "", fmt.Errorf("load fs config: %w", err)
-	}
-
-	return bundleConfig, bundleConfigFilename, err
 }

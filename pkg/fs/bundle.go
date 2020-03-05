@@ -7,8 +7,9 @@
 package fs
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,6 +20,18 @@ import (
 	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
+
+// DefaultBundleConfigWriter is the default bundle config writer.
+func DefaultBundleConfigWriter(bundle sheaf.Bundle, config sheaf.BundleConfig) error {
+	jbc, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	filename := filepath.Join(bundle.Path(), sheaf.BundleConfigFilename)
+
+	return ioutil.WriteFile(filename, jbc, 0644)
+}
 
 // DefaultBundleFactory is the default fs factory.
 func DefaultBundleFactory(uri string) (sheaf.Bundle, error) {
@@ -50,7 +63,6 @@ type Bundle struct {
 	config       sheaf.BundleConfig
 	codec        sheaf.Codec
 	manifestsDir string
-	out          io.Writer
 	reporter     reporter.Reporter
 }
 
@@ -85,10 +97,6 @@ func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
 
 	if b.manifestsDir == "" {
 		b.manifestsDir = filepath.Join(b.rootPath, "app", "manifests")
-	}
-
-	if b.out == nil {
-		b.out = os.Stdout
 	}
 
 	return &b, nil
@@ -133,12 +141,17 @@ func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
 
 	bundleConfigFilename := filepath.Join(path, sheaf.BundleConfigFilename)
 
-	bundleConfig, err = sheaf.LoadBundleConfig(bundleConfigFilename)
+	data, err := ioutil.ReadFile(bundleConfigFilename)
 	if err != nil {
-		return bundleConfig, fmt.Errorf("load fs config: %w", err)
+		return sheaf.BundleConfig{}, fmt.Errorf("read %q: %w", bundleConfigFilename, err)
 	}
 
-	return bundleConfig, err
+	var bc sheaf.BundleConfig
+	if err := json.Unmarshal(data, &bc); err != nil {
+		return sheaf.BundleConfig{}, err
+	}
+
+	return bc, nil
 }
 
 // Codec is the codec for the fs.
@@ -200,9 +213,8 @@ func (b *Bundle) Images() (images.Set, error) {
 	seen := images.Empty
 
 	config := b.Config()
-	bundleImages := config.Images
+	bundleImages := *config.Images
 	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), b.reporter)
-	fmt.Fprintln(b.out)
 
 	seen = seen.Union(bundleImages)
 
@@ -230,7 +242,6 @@ func (b *Bundle) Images() (images.Set, error) {
 
 		p := strings.TrimPrefix(bundleManifest.ID, b.manifestsDir+"/")
 		printImageTree(p, names, b.reporter)
-		fmt.Fprintln(b.out)
 
 		seen = seen.Union(list)
 	}

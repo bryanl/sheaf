@@ -48,26 +48,53 @@ func SlurpData(t *testing.T, source string) []byte {
 	return data
 }
 
-// GenBundle generates a bundle.
-func GenBundle(t *testing.T, controller *gomock.Controller) *mocks.MockBundle {
-	bundle := mocks.NewMockBundle(controller)
+// BundleGeneratorOption is a functional option for configuring BundleGenerator.
+type BundleGeneratorOption func(generator BundleGenerator) BundleGenerator
 
-	config := sheaf.BundleConfig{
+// BundleGeneratorConfig sets config for BundleGenerator.
+func BundleGeneratorConfig(config sheaf.BundleConfig) BundleGeneratorOption {
+	return func(generator BundleGenerator) BundleGenerator {
+		generator.config = config
+		return generator
+	}
+}
+
+// BundleGenerator generates a sheaf.Bundle mock.
+type BundleGenerator struct {
+	config    sheaf.BundleConfig
+	manifests []sheaf.BundleManifest
+}
+
+var (
+	// BundleConfig is the default bundle config for mocks.
+	BundleConfig = sheaf.BundleConfig{
 		Name:          "project",
 		Version:       "0.1.0",
 		SchemaVersion: "v1alpha1",
 	}
-	bundle.EXPECT().Config().Return(config).AnyTimes()
+)
 
-	bundleManifests := []sheaf.BundleManifest{
-		{
-			ID:   "deploy.yaml",
-			Data: SlurpData(t, filepath.Join("testdata", "manifests", "deploy.yaml")),
+// GenerateBundle generates a bundle mock.
+func GenerateBundle(t *testing.T, controller *gomock.Controller, options ...BundleGeneratorOption) *mocks.MockBundle {
+	bg := BundleGenerator{
+		config: BundleConfig,
+		manifests: []sheaf.BundleManifest{
+			{
+				ID:   "deploy.yaml",
+				Data: SlurpData(t, filepath.Join("testdata", "manifests", "deploy.yaml")),
+			},
 		},
 	}
 
+	for _, option := range options {
+		bg = option(bg)
+	}
+
+	bundle := mocks.NewMockBundle(controller)
+	bundle.EXPECT().Config().Return(bg.config).AnyTimes()
+
 	m := mocks.NewMockManifestService(controller)
-	m.EXPECT().List().Return(bundleManifests, nil).AnyTimes()
+	m.EXPECT().List().Return(bg.manifests, nil).AnyTimes()
 
 	bundle.EXPECT().Manifests().Return(m, nil).AnyTimes()
 

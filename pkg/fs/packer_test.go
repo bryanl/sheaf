@@ -27,7 +27,7 @@ func TestPacker_Pack(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	bundle := testutil.GenBundle(t, controller)
+	bundle := testutil.GenerateBundle(t, controller)
 
 	layout := mocks.NewMockLayout(controller)
 	imageName, err := image.NewName("docker.io/library/image")
