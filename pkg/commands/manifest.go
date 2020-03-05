@@ -16,7 +16,7 @@ import (
 func NewManifestCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "manifest",
-		Short:        "sheaf manifest commands",
+		Short:        "Perform operations on bundle manifests",
 		SilenceUsage: true,
 	}
 

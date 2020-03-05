@@ -4,16 +4,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package commands
+package archive
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/archiver"
+	archive2 "github.com/bryanl/sheaf/pkg/archive"
 	"github.com/bryanl/sheaf/pkg/fs"
-	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewStageCommand creates a stage command.
@@ -21,8 +20,8 @@ func NewStageCommand() *cobra.Command {
 	var dryRun bool
 
 	cmd := &cobra.Command{
-		Use:   "stage",
-		Short: "stage a fs",
+		Use:   "relocate",
+		Short: "Relocate images in archive to new registry",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 2 {
 				return fmt.Errorf("requires fs location and registry prefix")
@@ -31,18 +30,13 @@ func NewStageCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			is := fs.NewImageRelocator(
+			relocator := fs.NewImageRelocator(
 				fs.ImageRelocatorDryRun(dryRun))
 
-			config := sheaf.StageConfig{
-				ArchivePath:    args[0],
-				RegistryPrefix: args[1],
-				BundleFactory:  fs.DefaultBundleFactory,
-				ImageStager:    is,
-				Archiver:       archiver.Default,
-			}
+			stager := archive2.NewStager(
+				archive2.StagerOptionImageRelocator(relocator))
 
-			return sheaf.Stage(config)
+			return stager.Stage(args[0], args[1])
 		},
 	}
 

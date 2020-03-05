@@ -16,7 +16,7 @@ import (
 func NewConfigCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "config",
-		Short:        "perform actions on a bundle directory",
+		Short:        "Perform actions on a bundle directory",
 		SilenceUsage: true,
 	}
 

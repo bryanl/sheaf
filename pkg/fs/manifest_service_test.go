@@ -16,13 +16,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 func TestManifestService_List(t *testing.T) {
-	withBundleDir(t, func(dir string) {
-		stageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
+	testutil.WithBundleDir(t, func(dir string) {
+		testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
 
 		manifestDir := filepath.Join("testdata", "manifests")
 		m, err := NewManifestService(manifestDir, ManifestServiceReporter(reporter.Nop{}))
@@ -34,11 +35,11 @@ func TestManifestService_List(t *testing.T) {
 		wanted := []sheaf.BundleManifest{
 			{
 				ID:   filepath.Join(manifestDir, "deploy.yaml"),
-				Data: slurpData(t, filepath.Join(manifestDir, "deploy.yaml")),
+				Data: testutil.SlurpData(t, filepath.Join(manifestDir, "deploy.yaml")),
 			},
 			{
 				ID:   filepath.Join(manifestDir, "service.yaml"),
-				Data: slurpData(t, filepath.Join(manifestDir, "service.yaml")),
+				Data: testutil.SlurpData(t, filepath.Join(manifestDir, "service.yaml")),
 			},
 		}
 		require.Equal(t, wanted, actual)
@@ -46,8 +47,8 @@ func TestManifestService_List(t *testing.T) {
 }
 
 func TestManifestService_Add_from_http_url(t *testing.T) {
-	withBundleDir(t, func(bundleDir string) {
-		stageFile(t, sheaf.BundleConfigFilename, filepath.Join(bundleDir, sheaf.BundleConfigFilename))
+	testutil.WithBundleDir(t, func(bundleDir string) {
+		testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(bundleDir, sheaf.BundleConfigFilename))
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, "data")
@@ -71,8 +72,8 @@ func TestManifestService_Add_from_http_url(t *testing.T) {
 }
 
 func TestManifestService_Add_from_non_http_url(t *testing.T) {
-	withBundleDir(t, func(bundleDir string) {
-		stageFile(t, sheaf.BundleConfigFilename, filepath.Join(bundleDir, sheaf.BundleConfigFilename))
+	testutil.WithBundleDir(t, func(bundleDir string) {
+		testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(bundleDir, sheaf.BundleConfigFilename))
 
 		manifestDir := filepath.Join(bundleDir, "app", "manifests")
 		m, err := NewManifestService(manifestDir, ManifestServiceReporter(reporter.Nop{}))
@@ -118,8 +119,8 @@ func TestManifestService_Add_from_fs(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withBundleDir(t, func(bundleDir string) {
-				stageFile(t, sheaf.BundleConfigFilename, filepath.Join(bundleDir, sheaf.BundleConfigFilename))
+			testutil.WithBundleDir(t, func(bundleDir string) {
+				testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(bundleDir, sheaf.BundleConfigFilename))
 
 				if tc.setup != nil {
 					tc.setup(t, bundleDir)

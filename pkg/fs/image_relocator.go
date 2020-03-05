@@ -12,6 +12,7 @@ import (
 	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/pathmapping"
 
+	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -29,6 +30,7 @@ func ImageRelocatorDryRun(dryRun bool) ImageRelocatorOption {
 // ImageRelocator relocates images to a registry.
 type ImageRelocator struct {
 	layoutFactory LayoutFactory
+	reporter      reporter.Reporter
 	dryRun        bool
 }
 
@@ -38,6 +40,7 @@ var _ sheaf.ImageRelocator = &ImageRelocator{}
 func NewImageRelocator(options ...ImageRelocatorOption) *ImageRelocator {
 	is := ImageRelocator{
 		layoutFactory: DefaultLayoutFactory(),
+		reporter:      reporter.Default,
 	}
 
 	for _, option := range options {
@@ -65,7 +68,7 @@ func (i ImageRelocator) Relocate(rootPath, prefix string, images []image.Name) e
 			return fmt.Errorf("create relocated image name: %w", err)
 		}
 
-		printImageRelocation(imageName.String(), newImageName.String())
+		i.printImageRelocation(imageName.String(), newImageName.String(), i.dryRun)
 		if i.dryRun {
 			continue
 		}
@@ -78,8 +81,11 @@ func (i ImageRelocator) Relocate(rootPath, prefix string, images []image.Name) e
 	return nil
 }
 
-func printImageRelocation(oldName, newName string) {
-	fmt.Println("Relocating image")
-	fmt.Printf("%s old: %s\n", treeItem, oldName)
-	fmt.Printf("%s new: %s\n\n", treeItemLast, newName)
+func (i ImageRelocator) printImageRelocation(oldName, newName string, isDryRun bool) {
+	var marker string
+	if isDryRun {
+		marker = " (DRY RUN)"
+	}
+	i.reporter.Reportf("Relocating image%s\n%s old: %s\n%s new: %s",
+		marker, treeItem, oldName, treeItemLast, newName)
 }

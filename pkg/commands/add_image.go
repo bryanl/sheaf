@@ -20,7 +20,7 @@ func NewAddImageCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add-image",
-		Short: "add image to fs",
+		Short: "Add image to bundle",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return fmt.Errorf("requires fs path")
