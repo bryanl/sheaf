@@ -23,7 +23,7 @@ import (
 func NewListImages() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-images",
-		Short: "lists images given an archive path",
+		Short: "Lists images given an archive path",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return fmt.Errorf("requires archive path")

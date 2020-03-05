@@ -13,12 +13,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 func TestBundle_Path(t *testing.T) {
-	withBundleDir(t, func(dir string) {
-		stageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
+	testutil.WithBundleDir(t, func(dir string) {
+		testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
 
 		bundle, err := NewBundle(dir)
 		require.NoError(t, err)
@@ -29,8 +30,8 @@ func TestBundle_Path(t *testing.T) {
 }
 
 func TestBundle_Config(t *testing.T) {
-	withBundleDir(t, func(dir string) {
-		configRaw := stageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
+	testutil.WithBundleDir(t, func(dir string) {
+		configRaw := testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
 		var wanted sheaf.BundleConfig
 		require.NoError(t, json.Unmarshal(configRaw, &wanted))
 

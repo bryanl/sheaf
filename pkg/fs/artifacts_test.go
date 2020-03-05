@@ -15,6 +15,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/mocks"
 )
 
@@ -29,7 +30,7 @@ func TestArtifactsService_Index(t *testing.T) {
 	layoutDir := filepath.Join(dir, "artifacts", "layout")
 	require.NoError(t, os.MkdirAll(layoutDir, 0700))
 
-	wanted := stageFile(t, "index.json", filepath.Join(layoutDir, "index.json"))
+	wanted := testutil.StageFile(t, "index.json", filepath.Join(layoutDir, "index.json"))
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()

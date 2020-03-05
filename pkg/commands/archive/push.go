@@ -19,7 +19,7 @@ func NewPushCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use: "push",
 		// TODO: support relocating images
-		Short: "push sheaf archive to registry",
+		Short: "Push sheaf archive to registry",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 2 {
 				return fmt.Errorf("requires path to bundle and destination")

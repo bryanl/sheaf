@@ -18,7 +18,7 @@ import (
 	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/stretchr/testify/require"
 
-	"github.com/bryanl/sheaf/pkg/images"
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/mocks"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
@@ -27,7 +27,7 @@ func TestPacker_Pack(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	bundle := genBundle(t, controller)
+	bundle := testutil.GenBundle(t, controller)
 
 	layout := mocks.NewMockLayout(controller)
 	imageName, err := image.NewName("docker.io/library/image")
@@ -56,35 +56,6 @@ func TestPacker_Pack(t *testing.T) {
 
 	// ensure manifests exists
 	require.True(t, a.contents.hasKey("app", "manifests", "deploy.yaml"))
-}
-
-func genBundle(t *testing.T, controller *gomock.Controller) *mocks.MockBundle {
-	bundle := mocks.NewMockBundle(controller)
-
-	config := sheaf.BundleConfig{
-		Name:          "project",
-		Version:       "0.1.0",
-		SchemaVersion: "v1alpha1",
-	}
-	bundle.EXPECT().Config().Return(config).AnyTimes()
-
-	bundleManifests := []sheaf.BundleManifest{
-		{
-			ID:   "deploy.yaml",
-			Data: slurpData(t, filepath.Join("testdata", "manifests", "deploy.yaml")),
-		},
-	}
-
-	m := mocks.NewMockManifestService(controller)
-	m.EXPECT().List().Return(bundleManifests, nil).AnyTimes()
-
-	bundle.EXPECT().Manifests().Return(m, nil).AnyTimes()
-
-	imageList, err := images.New([]string{"image"})
-	require.NoError(t, err)
-	bundle.EXPECT().Images().Return(imageList, nil).AnyTimes()
-
-	return bundle
 }
 
 type fakeArchiver struct {

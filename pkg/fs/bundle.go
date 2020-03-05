@@ -16,6 +16,7 @@ import (
 	"github.com/bryanl/sheaf/pkg/codec"
 	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/manifest"
+	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -50,6 +51,7 @@ type Bundle struct {
 	codec        sheaf.Codec
 	manifestsDir string
 	out          io.Writer
+	reporter     reporter.Reporter
 }
 
 var _ sheaf.Bundle = &Bundle{}
@@ -70,6 +72,7 @@ func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
 	b := Bundle{
 		rootPath: rootPath,
 		config:   config,
+		reporter: reporter.Default,
 	}
 
 	for _, option := range options {
@@ -198,7 +201,7 @@ func (b *Bundle) Images() (images.Set, error) {
 
 	config := b.Config()
 	bundleImages := config.Images
-	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), os.Stdout)
+	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), b.reporter)
 	fmt.Fprintln(b.out)
 
 	seen = seen.Union(bundleImages)
@@ -226,7 +229,7 @@ func (b *Bundle) Images() (images.Set, error) {
 		}
 
 		p := strings.TrimPrefix(bundleManifest.ID, b.manifestsDir+"/")
-		printImageTree(p, names, b.out)
+		printImageTree(p, names, b.reporter)
 		fmt.Fprintln(b.out)
 
 		seen = seen.Union(list)
@@ -235,14 +238,17 @@ func (b *Bundle) Images() (images.Set, error) {
 	return seen, nil
 }
 
-func printImageTree(source string, imageNames []string, out io.Writer) {
-	fmt.Fprintln(out, source)
+func printImageTree(source string, imageNames []string, r reporter.Reporter) {
+	if len(imageNames) == 0 {
+		return
+	}
+	r.Report(source)
 	for i, name := range imageNames {
 		prefix := treeItem
 		if i == len(imageNames)-1 {
 			prefix = treeItemLast
 		}
 
-		fmt.Fprintf(out, "%s %s\n", prefix, name)
+		r.Reportf("%s %s", prefix, name)
 	}
 }

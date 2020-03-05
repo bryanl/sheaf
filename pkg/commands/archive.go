@@ -16,13 +16,15 @@ import (
 func NewArchiveCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "archive",
-		Short:        "perform actions on an archive",
+		Short:        "Perform actions on an archive",
 		SilenceUsage: true,
 	}
 
 	cmd.AddCommand(
 		archive.NewListImages(),
-		archive.NewPushCommand())
+		archive.NewPushCommand(),
+		archive.NewStageCommand(),
+		archive.NewShowManifests())
 
 	return cmd
 }
