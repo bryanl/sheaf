@@ -26,7 +26,7 @@ func TestStager_Stage(t *testing.T) {
 	a := mocks.NewMockArchiver(controller)
 	a.EXPECT().Unarchive("archive-uri", gomock.Any()).Return(nil)
 
-	bundle := testutil.GenBundle(t, controller)
+	bundle := testutil.GenerateBundle(t, controller)
 	bundleFactory := func(string) (sheaf.Bundle, error) {
 		return bundle, nil
 	}

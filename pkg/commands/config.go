@@ -21,6 +21,10 @@ func NewConfigCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		config.NewAddImageCommand(),
+		config.NewSetUserDefinedImage(),
+		config.NewDeleteUserDefinedImage(),
+		config.NewGetCommand(),
 		config.NewPushCommand(),
 		config.NewPullCommand())
 

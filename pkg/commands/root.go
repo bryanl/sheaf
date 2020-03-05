@@ -20,7 +20,6 @@ func NewRootCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		NewInitCommand(),
-		NewAddImageCommand(),
 		NewPackCommand(),
 		NewArchiveCommand(),
 		NewManifestCommand(),

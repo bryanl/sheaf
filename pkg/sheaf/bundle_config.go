@@ -7,10 +7,10 @@
 package sheaf
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
+
+	"go.uber.org/multierr"
+	"k8s.io/client-go/util/jsonpath"
 
 	"github.com/bryanl/sheaf/pkg/images"
 )
@@ -32,6 +32,9 @@ const (
 	SingleResult UserDefinedImageType = "single"
 )
 
+// UserDefinedImageTypes is a list of user defined image types as a string.
+var UserDefinedImageTypes = []string{string(MultiResult), string(SingleResult)}
+
 // UserDefinedImage is a user defined image. These allow sheaf to find more
 // images.
 type UserDefinedImage struct {
@@ -41,16 +44,62 @@ type UserDefinedImage struct {
 	Type       UserDefinedImageType `json:"type"`
 }
 
+// Validate validates a user defined image.
+func (udi UserDefinedImage) Validate() error {
+	var apiVersionErr, kindErr, jsonPathErr, typeErr error
+
+	if udi.APIVersion == "" {
+		apiVersionErr = fmt.Errorf("api version is blank")
+	}
+
+	if udi.Kind == "" {
+		kindErr = fmt.Errorf("kind is blank")
+	}
+
+	if udi.JSONPath == "" {
+		jsonPathErr = fmt.Errorf("json path is blank")
+	} else {
+		j := jsonpath.New("parser")
+		if err := j.Parse(udi.JSONPath); err != nil {
+			jsonPathErr = fmt.Errorf("unable to parse json path %q: %w", udi.JSONPath, err)
+		}
+	}
+
+	if udi.Type == "" {
+		typeErr = fmt.Errorf("type is blank")
+	} else if !udiContains(udi.Type, []UserDefinedImageType{SingleResult, MultiResult}) {
+		typeErr = fmt.Errorf("unknown type %s", udi.Type)
+	}
+
+	return multierr.Combine(apiVersionErr, kindErr, jsonPathErr, typeErr)
+}
+
+func udiContains(udi UserDefinedImageType, list []UserDefinedImageType) bool {
+	for i := range list {
+		if udi == list[i] {
+			return true
+		}
+	}
+
+	return false
+}
+
+// UserDefinedImageKey is a key describing a UserDefinedImage.
+type UserDefinedImageKey struct {
+	APIVersion string
+	Kind       string
+}
+
 // BundleConfig is a fs configuration.
 type BundleConfig struct {
+	// SchemaVersion is the version of the schema this fs uses.
+	SchemaVersion string `json:"schemaVersion"`
 	// Name is the name of the fs.
 	Name string `json:"name"`
 	// Version is the version of the fs.
 	Version string `json:"version"`
-	// SchemaVersion is the version of the schema this fs uses.
-	SchemaVersion string `json:"schemaVersion"`
 	// Images is a set of images required by the fs.
-	Images images.Set `json:"images"`
+	Images *images.Set `json:"images,omitempty"`
 	// UserDefinedImages is a list of user defined image locations.
 	UserDefinedImages []UserDefinedImage `json:"userDefinedImages,omitempty"`
 }
@@ -68,32 +117,5 @@ func NewBundleConfig(name, version string) BundleConfig {
 	}
 }
 
-// LoadBundleConfig loads a BundleConfig from a file.
-func LoadBundleConfig(filename string) (BundleConfig, error) {
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return BundleConfig{}, fmt.Errorf("read %q: %w", filename, err)
-	}
-
-	var bc BundleConfig
-	if err := json.Unmarshal(data, &bc); err != nil {
-		return BundleConfig{}, err
-	}
-
-	return bc, nil
-}
-
-// StoreBundleConfig saves a BundleConfig to a file, destructively.
-func StoreBundleConfig(bc BundleConfig, filename string) error {
-	jbc, err := json.Marshal(bc)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filename, jbc, 0644)
-}
-
-// Filename returns the fs archive file name for this BundleConfig.
-func (bc *BundleConfig) Filename(dir string) string {
-	return filepath.Join(dir, fmt.Sprintf("%s-%s.tgz", bc.Name, bc.Version))
-}
+// BundleConfigWriter writes a bundle config.
+type BundleConfigWriter func(Bundle, BundleConfig) error

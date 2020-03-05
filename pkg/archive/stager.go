@@ -21,7 +21,7 @@ import (
 // StagerOption is a functional option for Stager.
 type StagerOption func(s Stager) Stager
 
-// StagerOptionBundleReporter sets the reporter.
+// StagerOptionReporter sets the reporter.
 func StagerOptionReporter(r reporter.Reporter) StagerOption {
 	return func(s Stager) Stager {
 		s.reporter = r
@@ -53,6 +53,7 @@ func StagerOptionBundleFactory(bf sheaf.BundleFactory) StagerOption {
 	}
 }
 
+// StagerOptionBundleReporter sets the bundle reporter.
 func StagerOptionBundleReporter(r reporter.Reporter) StagerOption {
 	return func(s Stager) Stager {
 		s.reporter = r

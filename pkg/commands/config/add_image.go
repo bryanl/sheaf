@@ -4,40 +4,36 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package commands
+package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/bryanl/sheaf/pkg/fs"
 )
 
 // NewAddImageCommand creates an add image command.
 func NewAddImageCommand() *cobra.Command {
 	var images []string
+	var bundlePath string
 
 	cmd := &cobra.Command{
 		Use:   "add-image",
 		Short: "Add image to bundle",
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("requires fs path")
-			}
-			return nil
-		},
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ia, err := sheaf.NewImageAdder(args[0])
+			ia, err := fs.NewImageAdder(bundlePath)
 			if err != nil {
 				return err
 			}
-			return ia.Add(images)
+			return ia.Add(images...)
 		},
 	}
 
 	cmd.Flags().StringSliceVarP(&images, "image", "i", nil,
 		"image to add (can specify multiple times)")
+
+	cmd.Flags().StringVar(&bundlePath, "bundle-path", ".", "bundle path")
 
 	return cmd
 }
