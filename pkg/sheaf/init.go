@@ -88,7 +88,10 @@ func (i *Initer) Init() error {
 		}
 	}()
 
-	if err := json.NewEncoder(f).Encode(&bc); err != nil {
+	e := json.NewEncoder(f)
+	e.SetIndent("", "  ")
+
+	if err := e.Encode(&bc); err != nil {
 		return err
 	}
 

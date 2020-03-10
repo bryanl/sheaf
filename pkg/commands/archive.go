@@ -22,6 +22,7 @@ func NewArchiveCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		archive.NewListImages(),
+		archive.NewPackCommand(),
 		archive.NewPushCommand(),
 		archive.NewStageCommand(),
 		archive.NewShowManifests())

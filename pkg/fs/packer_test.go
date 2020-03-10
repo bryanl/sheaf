@@ -20,6 +20,7 @@ import (
 
 	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/mocks"
+	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -40,7 +41,8 @@ func TestPacker_Pack(t *testing.T) {
 
 	a := &fakeArchiver{}
 
-	p := NewPacker(ioutil.Discard,
+	p := NewPacker(
+		PackerReporter(reporter.Nop{}),
 		PackerLayoutFactory(layoutFactory),
 		PackerArchiver(a))
 
@@ -64,11 +66,11 @@ type fakeArchiver struct {
 
 var _ sheaf.Archiver = &fakeArchiver{}
 
-func (f fakeArchiver) Unarchive(src, dest string) error {
+func (f fakeArchiver) Unarchive(_, _ string) error {
 	panic("implement me")
 }
 
-func (f *fakeArchiver) Archive(src string, w io.Writer) error {
+func (f *fakeArchiver) Archive(src string, _ io.Writer) error {
 	f.contents = archiverContents{}
 
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {

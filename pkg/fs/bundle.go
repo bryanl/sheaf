@@ -70,15 +70,15 @@ var _ sheaf.Bundle = &Bundle{}
 
 // NewBundle creates an instance of Bundle. `rootPath` points to root directory
 // of the fs on the filesystem.
-func NewBundle(rootPath string, options ...Option) (*Bundle, error) {
-	rootPath, err := locateRootDir(rootPath)
+func NewBundle(bundleDir string, options ...Option) (*Bundle, error) {
+	rootPath, err := locateRootDir(bundleDir)
 	if err != nil {
-		return nil, fmt.Errorf("locate bundle root directory")
+		return nil, fmt.Errorf("locate bundle root directory for %s", bundleDir)
 	}
 
 	config, err := loadBundleConfig(rootPath)
 	if err != nil {
-		return nil, fmt.Errorf("load fs config: %w", err)
+		return nil, fmt.Errorf("load bundle config: %w", err)
 	}
 
 	b := Bundle{
@@ -213,7 +213,10 @@ func (b *Bundle) Images() (images.Set, error) {
 	seen := images.Empty
 
 	config := b.Config()
-	bundleImages := *config.Images
+	bundleImages := images.Empty
+	if config.Images != nil {
+		bundleImages = *config.Images
+	}
 	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), b.reporter)
 
 	seen = seen.Union(bundleImages)
