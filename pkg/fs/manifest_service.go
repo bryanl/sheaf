@@ -103,12 +103,12 @@ func (m ManifestService) Add(manifestURIs ...string) error {
 	for _, manifestURI := range manifestURIs {
 		m.reporter.Header(fmt.Sprintf("Adding manifest from %s", manifestURI))
 
-		u, err := url.Parse(manifestURI)
+		u, validURL, err := getURL(manifestURI)
 		if err != nil {
 			return err
 		}
 
-		if u.Scheme != "" {
+		if validURL {
 			if err := m.addURL(*u); err != nil {
 				return err
 			}
@@ -221,4 +221,19 @@ func (m ManifestService) addDir(manifestDir string) error {
 		}
 	}
 	return nil
+}
+
+// getURL returns a url.URL if the given URI is a valid URL.
+// url.Parse returns a url object with the scheme populated for
+// Winddows paths, so the Host must also be checked.
+func getURL(manifestURI string) (*url.URL, bool, error) {
+	u, err := url.Parse(manifestURI)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if u.Scheme != "" && u.Host != "" {
+		return u, true, nil
+	}
+	return nil, false, nil
 }

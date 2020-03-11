@@ -145,3 +145,54 @@ func TestManifestService_Add_from_fs(t *testing.T) {
 		})
 	}
 }
+
+func TestManifestService_Test_Get_URL(t *testing.T) {
+
+	cases := []struct {
+		name        string
+		manifestURI string
+		wanted      bool
+	}{
+		{
+			name:        "relative path is not a url",
+			manifestURI: filepath.Join("testdata", "manifests", "deploy.yaml"),
+			wanted:      false,
+		},
+		{
+			name:        "absolute unix path is not a url",
+			manifestURI: "/tmp/deploy.yaml",
+			wanted:      false,
+		},
+		{
+			name:        "absolute windows path is not a url",
+			manifestURI: "c:\\tmp\\deploy.yaml",
+			wanted:      false,
+		},
+		{
+			name:        "relative windows path is not a url",
+			manifestURI: "tmp\\deploy.yaml",
+			wanted:      false,
+		},
+		{
+			name:        "http path is a url",
+			manifestURI: "http://example.com/deploy.yaml",
+			wanted:      true,
+		},
+		{
+			name:        "https path is a url",
+			manifestURI: "https://example.com/deploy.yaml",
+			wanted:      true,
+		},
+		{
+			name:        "ws path is a url",
+			manifestURI: "ws://example.com/deploy.yaml",
+			wanted:      true,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, valid, _ := getURL(tc.manifestURI)
+			require.Equal(t, tc.wanted, valid)
+		})
+	}
+}
