@@ -16,6 +16,7 @@ import (
 
 	"github.com/bryanl/sheaf/pkg/archiver"
 	"github.com/bryanl/sheaf/pkg/codec"
+	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -38,23 +39,31 @@ func PackerArchiver(a sheaf.Archiver) PackerOption {
 	}
 }
 
+// PackerReporter sets the reporter for Packer.
+func PackerReporter(r reporter.Reporter) PackerOption {
+	return func(p Packer) Packer {
+		p.reporter = r
+		return p
+	}
+}
+
 // Packer packs a fs into an archive.
 type Packer struct {
 	codec         sheaf.Encoder
 	archiver      sheaf.Archiver
 	layoutFactory LayoutFactory
-	out           io.Writer
+	reporter      reporter.Reporter
 }
 
 var _ sheaf.Packer = &Packer{}
 
 // NewPacker creates an instance of Packer.
-func NewPacker(out io.Writer, options ...PackerOption) *Packer {
+func NewPacker(options ...PackerOption) *Packer {
 	p := Packer{
 		codec:         codec.DefaultEncoder,
 		archiver:      archiver.Default,
 		layoutFactory: DefaultLayoutFactory(),
-		out:           out,
+		reporter:      reporter.Default,
 	}
 
 	for _, option := range options {
@@ -89,7 +98,7 @@ func (p Packer) Pack(b sheaf.Bundle, w io.Writer) error {
 		return fmt.Errorf("stage images")
 	}
 
-	fmt.Fprintln(p.out, "creating archive")
+	p.reporter.Header("Creating archive")
 	if err := p.archiver.Archive(dir, w); err != nil {
 		return fmt.Errorf("create packed archive: %w", err)
 	}
@@ -98,7 +107,7 @@ func (p Packer) Pack(b sheaf.Bundle, w io.Writer) error {
 }
 
 func (p Packer) stageImages(dir string, b sheaf.Bundle) error {
-	fmt.Fprintln(p.out, "Staging images")
+	p.reporter.Header("Staging images")
 
 	layout, err := p.layoutFactory(dir)
 	if err != nil {
@@ -111,7 +120,7 @@ func (p Packer) stageImages(dir string, b sheaf.Bundle) error {
 	}
 
 	for _, imageName := range imageList.Slice() {
-		fmt.Fprintf(p.out, "adding %s to layout\n", imageName.String())
+		p.reporter.Reportf("adding %s to layout\n", imageName.String())
 		if _, err := layout.Add(imageName); err != nil {
 			return fmt.Errorf("add ref %s to image layout: %w", imageName, err)
 		}
@@ -120,7 +129,7 @@ func (p Packer) stageImages(dir string, b sheaf.Bundle) error {
 }
 
 func (p Packer) stageManifests(dir string, b sheaf.Bundle) error {
-	fmt.Fprintln(p.out, "Staging manifests")
+	p.reporter.Header("Staging manifests")
 
 	manifestsDest := filepath.Join(dir, "app", "manifests")
 	if err := os.MkdirAll(manifestsDest, 0700); err != nil {
@@ -149,7 +158,7 @@ func (p Packer) stageManifests(dir string, b sheaf.Bundle) error {
 }
 
 func (p Packer) stageBundleConfig(dir string, b sheaf.Bundle) error {
-	fmt.Fprintln(p.out, "Staging fs configuration")
+	p.reporter.Header("Staging bundle configuration")
 
 	bundleConfigPath := filepath.Join(dir, sheaf.BundleConfigFilename)
 	bundleConfigData, err := p.codec.Encode(b.Config())

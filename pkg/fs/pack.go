@@ -4,20 +4,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package sheaf
+package fs
 
 import (
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // PackConfig is configuration for Pack.
 type PackConfig struct {
-	Packer        Packer
+	Packer        sheaf.Packer
 	BundleURI     string
-	BundleFactory BundleFactory
+	BundleFactory sheaf.BundleFactory
+	Dest          string
+	Force         bool
 }
 
 // Pack packs a fs.
@@ -27,7 +31,16 @@ func Pack(config PackConfig) error {
 		return fmt.Errorf("open fs: %w", err)
 	}
 
-	dest := filepath.Join(bundle.Path(), BundleConfigFilename)
+	bundleConfig := bundle.Config()
+
+	filename := fmt.Sprintf("%s-%s.tgz", bundleConfig.Name, bundleConfig.Version)
+
+	dest := filepath.Join(config.Dest, filename)
+	if _, err := os.Stat(dest); err == nil && !config.Force {
+		return fmt.Errorf("unable to create archive %q because a file already exists", dest)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
 
 	f, err := os.Create(dest)
 	if err != nil {

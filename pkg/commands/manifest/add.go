@@ -23,6 +23,7 @@ func NewAddCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add",
 		Short: "add manifest to bundle",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			b, err := fs.NewBundle(bundleDir)
 			if err != nil {
