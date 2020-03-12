@@ -14,7 +14,7 @@ import (
 
 // NewPackCommand creates a pack command.
 func NewPackCommand() *cobra.Command {
-	var bundleDir string
+	var bundlePath string
 	var force bool
 
 	cmd := &cobra.Command{
@@ -28,7 +28,7 @@ func NewPackCommand() *cobra.Command {
 			}
 
 			config := fs.PackConfig{
-				BundleURI:     bundleDir,
+				BundleURI:     bundlePath,
 				BundleFactory: fs.DefaultBundleFactory,
 				Packer:        fs.NewPacker(),
 				Dest:          dest,
@@ -38,7 +38,7 @@ func NewPackCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&bundleDir, "bundle-dir", ".", "bundle directory")
+	cmd.Flags().StringVar(&bundlePath, "bundle-path", ".", "bundle path")
 	cmd.Flags().BoolVar(&force, "force", false, "overwrite existing file")
 
 	return cmd
