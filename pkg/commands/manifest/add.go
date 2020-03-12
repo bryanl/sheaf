@@ -18,14 +18,14 @@ import (
 func NewAddCommand() *cobra.Command {
 	var files []string
 	var force bool
-	var bundleDir string
+	var bundlePath string
 
 	cmd := &cobra.Command{
 		Use:   "add",
 		Short: "add manifest to bundle",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			b, err := fs.NewBundle(bundleDir)
+			b, err := fs.NewBundle(bundlePath)
 			if err != nil {
 				return err
 			}
@@ -49,7 +49,7 @@ func NewAddCommand() *cobra.Command {
 	cmd.Flags().StringSliceVarP(&files, "filename", "f", nil,
 		"filename to add (can specify multiple times)")
 	cmd.Flags().BoolVar(&force, "force", false, "force (overwrite)")
-	cmd.Flags().StringVarP(&bundleDir, "bundle-dir", "d", cwd, "bundle directory")
+	cmd.Flags().StringVarP(&bundlePath, "bundle-path", "d", cwd, "bundle path")
 
 	return cmd
 }

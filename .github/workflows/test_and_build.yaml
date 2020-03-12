@@ -13,7 +13,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.x
+          go-version: 1.14.x
       - name: Checkout code
         uses: actions/checkout@v1
       - name: Install golangci-lint
@@ -26,7 +26,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.13.x]
+        go-version: [1.14.x]
         platform: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -40,6 +40,23 @@ jobs:
       - name: Run tests
         run: go test -v -covermode=count ./...
 
+  integration-test:
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Install Go
+        if: success()
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Run tests
+        run: go test -tags=integration -v ./... -count=1
+
   coverage:
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +64,7 @@ jobs:
         if: success()
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.x
+          go-version: 1.14.x
       - name: Checkout code
         uses: actions/checkout@v1
       - name: Calc coverage
@@ -72,7 +89,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.x
+          go-version: 1.14.x
       - name: Checkout code
         uses: actions/checkout@v1
       - name: build
