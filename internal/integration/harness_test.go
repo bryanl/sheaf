@@ -10,6 +10,7 @@ package integration_test
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -53,11 +54,33 @@ func (r *harness) buildSheaf() error {
 	return nil
 }
 
-func (r harness) runSheaf(workingDirectory string, args ...string) error {
+type sheafRunSettings struct {
+	Stdin  io.Reader
+	Stdout io.Writer
+	Stderr io.Writer
+}
+
+func genSheafRunSettings() sheafRunSettings {
+	return sheafRunSettings{
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+}
+
+var (
+	defaultSheafRunSettings = sheafRunSettings{
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+)
+
+func (r harness) runSheaf(workingDirectory string, settings sheafRunSettings, args ...string) error {
 	cmd := exec.Command(r.sheafBin, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin = settings.Stdin
+	cmd.Stdout = settings.Stdout
+	cmd.Stderr = settings.Stderr
 	cmd.Dir = workingDirectory
 
 	return cmd.Run()

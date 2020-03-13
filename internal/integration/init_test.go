@@ -9,8 +9,6 @@
 package integration_test
 
 import (
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -20,43 +18,36 @@ import (
 func Test_sheaf_init(t *testing.T) {
 	bundleName := "my-bundle"
 
-	workingDirectory, err := ioutil.TempDir("", "sheaf-test")
-	require.NoError(t, err)
+	withWorkingDirectory(t, func(wd string) {
 
-	t.Cleanup(func() {
-		if workingDirectory != "" {
-			err := os.RemoveAll(workingDirectory)
-			require.NoError(t, err)
-		}
-	})
-
-	cases := []struct {
-		name          string
-		bundleName    string
-		args          []string
-		runnerOptions []sheafInitRunnerOption
-	}{
-		{
-			name:       "with no options",
-			bundleName: bundleName,
-		},
-		{
-			name:       "with a bundle directory",
-			bundleName: bundleName,
-			args:       []string{"--bundle-path", "custom-dir"},
-			runnerOptions: []sheafInitRunnerOption{
-				func(initRunner sheafInitRunner) sheafInitRunner {
-					initRunner.bundlePath = "custom-dir"
-					return initRunner
+		cases := []struct {
+			name          string
+			bundleName    string
+			args          []string
+			runnerOptions []sheafInitRunnerOption
+		}{
+			{
+				name:       "with no options",
+				bundleName: bundleName,
+			},
+			{
+				name:       "with a bundle directory",
+				bundleName: bundleName,
+				args:       []string{"--bundle-path", "custom-dir"},
+				runnerOptions: []sheafInitRunnerOption{
+					func(initRunner sheafInitRunner) sheafInitRunner {
+						initRunner.bundlePath = "custom-dir"
+						return initRunner
+					},
 				},
 			},
-		},
-	}
+		}
 
-	for _, tc := range cases {
-		sir := newSheafInitRunner(t, testHarness, tc.name, workingDirectory, tc.bundleName, tc.runnerOptions...)
-		sir.Run(tc.args...)
-	}
+		for _, tc := range cases {
+			sir := newSheafInitRunner(t, testHarness, tc.name, wd, tc.bundleName, tc.runnerOptions...)
+			sir.Run(tc.args...)
+		}
+	})
 }
 
 type sheafInitRunnerOption func(initRunner sheafInitRunner) sheafInitRunner
@@ -99,7 +90,7 @@ func (r *sheafInitRunner) Run(args ...string) {
 			root = filepath.Join(r.workingDirectory, r.bundlePath)
 		}
 
-		err := r.harness.runSheaf(r.workingDirectory, args...)
+		err := r.harness.runSheaf(r.workingDirectory, defaultSheafRunSettings, args...)
 		require.NoError(t, err)
 
 		t.Run("creates a bundle directory", func(t *testing.T) {
