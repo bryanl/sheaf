@@ -112,6 +112,7 @@ func (m ManifestService) Add(manifestURIs ...string) error {
 			if err := m.addURL(*u); err != nil {
 				return err
 			}
+
 			continue
 		}
 
@@ -122,7 +123,7 @@ func (m ManifestService) Add(manifestURIs ...string) error {
 
 		fi, err := os.Stat(manifestURI)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to open %s: %v", manifestURI, err)
 		}
 
 		if fi.IsDir() {
@@ -225,7 +226,7 @@ func (m ManifestService) addDir(manifestDir string) error {
 
 // getURL returns a url.URL if the given URI is a valid URL.
 // url.Parse returns a url object with the scheme populated for
-// Winddows paths, so the Host must also be checked.
+// Windows paths, so the Host must also be checked.
 func getURL(manifestURI string) (*url.URL, bool, error) {
 	u, err := url.Parse(manifestURI)
 	if err != nil {
