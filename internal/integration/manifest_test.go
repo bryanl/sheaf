@@ -9,6 +9,7 @@
 package integration_test
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -102,13 +103,10 @@ func Test_sheaf_manifest_add(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			withWorkingDirectory(t, func(wd string) {
-				err := testHarness.runSheaf(wd, "init", "integration")
-				require.NoError(t, err)
-
-				bundleDir := filepath.Join(wd, "integration")
+				bundleDir := initBundle(t, testHarness, "integration", wd)
 
 				for _, f := range tc.files {
-					err = testHarness.runSheaf(bundleDir, "manifest", "add", "-f", f)
+					err = testHarness.runSheaf(bundleDir, defaultSheafRunSettings, "manifest", "add", "-f", f)
 					require.NoError(t, err, "unable to add %s", f)
 				}
 
@@ -120,4 +118,71 @@ func Test_sheaf_manifest_add(t *testing.T) {
 			})
 		})
 	}
+}
+
+func Test_sheaf_manifest_show(t *testing.T) {
+	td := func(parts ...string) string {
+		return testdata(t, append([]string{"manifest", "show"}, parts...)...)
+	}
+
+	cases := []struct {
+		name      string
+		manifests []string
+		args      []string
+		wanted    []byte
+	}{
+		{
+			name: "show single manifest",
+			manifests: []string{
+				td("workload1.yaml"),
+			},
+			wanted: readFile(t, td("single.yaml")),
+		},
+		{
+			name: "show multiple manifests",
+			manifests: []string{
+				td("workload2.yaml"),
+				td("workload1.yaml"),
+			},
+			wanted: readFile(t, td("multiple.yaml")),
+		},
+		{
+			name: "show manifests with prefix",
+			manifests: []string{
+				td("workload1.yaml"),
+			},
+			args: []string{
+				"--prefix", "example.com/registry",
+			},
+			wanted: readFile(t, td("prefix.yaml")),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			withWorkingDirectory(t, func(wd string) {
+				bundleDir := initBundle(t, testHarness, "integration", wd)
+
+				for _, manifest := range tc.manifests {
+					_, name := filepath.Split(manifest)
+					stageFile(t,
+						manifest,
+						filepath.Join(bundleDir, "app", "manifests", name))
+				}
+
+				settings := genSheafRunSettings()
+				var actual bytes.Buffer
+				settings.Stdout = &actual
+
+				args := append([]string{"manifest", "show"}, tc.args...)
+
+				err := testHarness.runSheaf(bundleDir, settings, args...)
+				require.NoError(t, err)
+
+				require.Equal(t, string(tc.wanted), actual.String())
+			})
+
+		})
+	}
+
 }

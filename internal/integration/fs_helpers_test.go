@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pivotal/go-ape/pkg/filecopy"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,6 +29,11 @@ func withWorkingDirectory(t *testing.T, fn func(dir string)) {
 	})
 
 	fn(workingDirectory)
+}
+
+func stageFile(t *testing.T, srcPath, destPath string) {
+	err := filecopy.Copy(destPath, srcPath)
+	require.NoError(t, err)
 }
 
 func checkDirExists(t *testing.T, dir string) {
