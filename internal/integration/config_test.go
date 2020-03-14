@@ -10,11 +10,17 @@ package integration_test
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/stringutil"
 	"github.com/bryanl/sheaf/pkg/images"
+	"github.com/bryanl/sheaf/pkg/remote"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -279,6 +285,56 @@ func Test_sheaf_config_get(t *testing.T) {
 		wanted = bytes.TrimSpace(wanted)
 
 		require.Equal(t, string(wanted), actual.String())
+	})
+}
+
+func Test_sheaf_config_push(t *testing.T) {
+	withWorkingDirectory(t, func(wd string) {
+		r := newRegistry()
+		r.Start(t)
+		defer r.Stop(t)
+
+		refPath := fmt.Sprintf("/%s/%s:v1",
+			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset),
+			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
+
+		ref := r.Ref(t, refPath)
+
+		b := sheafInit(t, testHarness, "integration", wd)
+
+		settings := defaultSheafRunSettings
+
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
+			"-f", testdata(t, "config", "push")))
+
+		args := append([]string{"config", "push", b.dir, ref})
+
+		err := b.harness.runSheaf(b.dir, settings, args...)
+		require.NoError(t, err)
+
+		dir, err := ioutil.TempDir("", "sheaf-test")
+		require.NoError(t, err)
+
+		dest := filepath.Join(dir, "dest")
+
+		defer func() {
+			require.NoError(t, os.RemoveAll(dir))
+		}()
+
+		require.NoError(t, remote.Write(ref, dest))
+
+		destConfig := filepath.Join(dest, "bundle.json")
+		checkFileEquals(t, b.configFile(), destConfig)
+
+		fis, err := ioutil.ReadDir(b.pathJoin("app", "manifests"))
+		require.NoError(t, err)
+
+		for _, fi := range fis {
+			cur := filepath.Join(dest, "app", "manifests", fi.Name())
+			checkFileEquals(t,
+				b.pathJoin("app", "manifests", fi.Name()),
+				cur)
+		}
 	})
 }
 

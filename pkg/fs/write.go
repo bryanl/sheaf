@@ -77,7 +77,6 @@ func (w *writer) Write(bundlePath string, dest string) error {
 
 	r.Header("Write configuration to registry")
 
-	fmt.Println("bundle path is", bundlePath)
 	archiveBytes, err := w.createArchive(bundlePath)
 	if err != nil {
 		return err
@@ -92,14 +91,14 @@ func (w *writer) Write(bundlePath string, dest string) error {
 
 	layers = append(layers, layer)
 
-	r.Report("create image from layers")
+	r.Report("Create image from layers")
 	base := empty.Image
 	withConfig, err := mutate.Append(base, layers...)
 	if err != nil {
 		return fmt.Errorf("append data layer to base: %w", err)
 	}
 
-	r.Report("setting image configuration")
+	r.Report("Setting image configuration")
 	cfg, err := withConfig.ConfigFile()
 	if err != nil {
 		return fmt.Errorf("get config file: %w", err)
@@ -108,18 +107,18 @@ func (w *writer) Write(bundlePath string, dest string) error {
 	cfg = cfg.DeepCopy()
 	cfg.Author = "github.com/bryanl/sheaf"
 
-	r.Report("adding image configuration to image")
+	r.Report("Adding image configuration to image")
 	image, err := mutate.ConfigFile(withConfig, cfg)
 	if err != nil {
 		return fmt.Errorf("mutate config file: %w", err)
 	}
 
-	r.Reportf("pushing new image to %s\n", dest)
+	r.Reportf("Pushing new image to %s\n", dest)
 	return w.imageWriter(dest, image)
 }
 
 func (w *writer) createArchive(bundlePath string) ([]byte, error) {
-	w.reporter.Reportf("creating archive of configuration and manifests in %s\n", bundlePath)
+	w.reporter.Reportf("Creating archive of configuration and manifests in %s\n", bundlePath)
 	a := w.archiver
 	var b bytes.Buffer
 	if err := a.Archive(bundlePath, &b); err != nil {
@@ -130,7 +129,7 @@ func (w *writer) createArchive(bundlePath string) ([]byte, error) {
 }
 
 func (w *writer) createLayer(b []byte) (mutate.Addendum, error) {
-	w.reporter.Report("create layer with archive")
+	w.reporter.Report("Create layer with archive")
 	dataLayer, err := tarball.LayerFromOpener(func() (closer io.ReadCloser, err error) {
 		return ioutil.NopCloser(bytes.NewBuffer(b)), nil
 	})

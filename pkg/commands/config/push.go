@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/bryanl/sheaf/internal/fsutil"
 	"github.com/bryanl/sheaf/pkg/fs"
 )
 
@@ -23,6 +24,11 @@ func NewPushCommand() *cobra.Command {
 			if len(args) != 2 {
 				return fmt.Errorf("requires path to bundle and destination")
 			}
+
+			if !fsutil.IsDirectory(args[0]) {
+				return fmt.Errorf("%s is not a directory", args[0])
+			}
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
