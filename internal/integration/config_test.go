@@ -9,6 +9,7 @@
 package integration_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -259,6 +260,26 @@ func Test_sheaf_config_delete_udi(t *testing.T) {
 			})
 		})
 	}
+}
+
+func Test_sheaf_config_get(t *testing.T) {
+	withWorkingDirectory(t, func(wd string) {
+		b := sheafInit(t, testHarness, "integration", wd)
+
+		settings := genSheafRunSettings()
+		var actual bytes.Buffer
+		settings.Stdout = &actual
+
+		args := append([]string{"config", "get"})
+
+		err := b.harness.runSheaf(b.dir, settings, args...)
+		require.NoError(t, err)
+
+		wanted := readFile(t, b.configFile())
+		wanted = bytes.TrimSpace(wanted)
+
+		require.Equal(t, string(wanted), actual.String())
+	})
 }
 
 type udiID struct {
