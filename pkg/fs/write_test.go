@@ -38,7 +38,7 @@ func TestWriter_Write(t *testing.T) {
 		})
 
 	imageWritten := false
-	var iw sheaf.ImageWriter = func(wantedDest string, i v1.Image) error {
+	var iw sheaf.ImageWriter = func(wantedDest string, i v1.Image, b bool) error {
 		require.Equal(t, dest, wantedDest)
 
 		imageWritten = true
@@ -50,7 +50,7 @@ func TestWriter_Write(t *testing.T) {
 		writerOptionImageWriter(iw),
 		writerOptionReporter(reporter.Nop{}))
 
-	err := w.Write(bundlePath, dest)
+	err := w.Write(bundlePath, dest, false)
 	require.NoError(t, err)
 
 	require.True(t, imageWritten)

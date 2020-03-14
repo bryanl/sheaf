@@ -16,14 +16,21 @@ import (
 )
 
 // ImageReader fetches an image given a reference.
-type ImageReader func(refStr string) (v1.Image, error)
+type ImageReader func(refStr string, forceInsecure bool) (v1.Image, error)
 
 // DefaultImageReader fetches an image given a reference from a registry.
-func DefaultImageReader(refStr string) (v1.Image, error) {
-	ref, err := name.ParseReference(refStr)
+func DefaultImageReader(refStr string, forceInsecure bool) (v1.Image, error) {
+	var nameOptions []name.Option
+	if forceInsecure {
+		nameOptions = append(nameOptions, name.Insecure)
+	}
+
+	ref, err := name.ParseReference(refStr, nameOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("parse remote reference: %w", err)
 	}
 
 	return remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 }
+
+var _ ImageReader = DefaultImageReader

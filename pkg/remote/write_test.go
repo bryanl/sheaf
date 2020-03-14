@@ -29,7 +29,7 @@ func TestWriter_Write(t *testing.T) {
 
 	i, err := random.Image(100, 1)
 	require.NoError(t, err)
-	ir := func(refStr string) (v1.Image, error) {
+	ir := func(refStr string, b bool) (v1.Image, error) {
 		return i, nil
 	}
 
@@ -38,5 +38,5 @@ func TestWriter_Write(t *testing.T) {
 		writerOptionArchiver(a),
 		writerOptionImageReader(ir))
 
-	require.NoError(t, w.Write("ref", "dest"))
+	require.NoError(t, w.Write("ref", "dest", false))
 }

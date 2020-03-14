@@ -101,15 +101,15 @@ func (r *registry) Stop(t *testing.T) {
 
 func (r *registry) Ref(t *testing.T, path string) string {
 	require.True(t, r.started, "registry has not been started")
-	return fmt.Sprintf("localhost:%s%s", r.port(t), path)
+	return fmt.Sprintf("%s%s", r.port(t), path)
 }
 
 func (r *registry) port(t *testing.T) string {
 	cmd := exec.Command("docker", "inspect",
-		"--format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostPort}}{{end}}'",
+		"--format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostIP}}:{{(index $conf 0).HostPort}}{{end}}'",
 		r.id)
-	data, err := cmd.Output()
-	require.NoError(t, err, "retrieve registry port")
+	data, err := cmd.CombinedOutput()
+	require.NoError(t, err, "retrieve registry port: %s", string(data))
 
 	port := string(bytes.TrimSpace(data))
 	if port[0] == '\'' {

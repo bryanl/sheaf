@@ -17,6 +17,8 @@ import (
 
 // NewPushCommand create a push command.
 func NewPushCommand() *cobra.Command {
+	var forceInsecure bool
+
 	cmd := cobra.Command{
 		Use:   "push",
 		Short: "push sheaf bundle config to registry",
@@ -35,9 +37,11 @@ func NewPushCommand() *cobra.Command {
 			bundlePath := args[0]
 			dest := args[1]
 
-			return fs.Write(bundlePath, dest)
+			return fs.Write(bundlePath, dest, forceInsecure)
 		},
 	}
+
+	cmd.Flags().BoolVar(&forceInsecure, "insecure-registry", false, "insecure registry")
 
 	return &cmd
 }

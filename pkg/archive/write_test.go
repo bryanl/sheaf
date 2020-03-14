@@ -27,7 +27,7 @@ func Test_writer_Writer(t *testing.T) {
 		Return(nil)
 
 	writerCalled := false
-	fw := func(bundlePath, dest string) error {
+	fw := func(bundlePath, dest string, b bool) error {
 		require.Equal(t, "dest", dest)
 		writerCalled = true
 		return nil
@@ -37,6 +37,6 @@ func Test_writer_Writer(t *testing.T) {
 		writerOptionArchiver(a),
 		writerOptionFSWriter(fw))
 
-	require.NoError(t, w.Write("archive-path", "dest"))
+	require.NoError(t, w.Write("archive-path", "dest", false))
 	require.True(t, writerCalled)
 }

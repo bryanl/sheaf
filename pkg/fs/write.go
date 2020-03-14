@@ -23,10 +23,10 @@ import (
 )
 
 // Write writes a bundle path to a remote location.
-func Write(bundlePath string, dest string) error {
+func Write(bundlePath string, dest string, forceInsecure bool) error {
 	w := newWriter()
 
-	return w.Write(bundlePath, dest)
+	return w.Write(bundlePath, dest, forceInsecure)
 }
 
 type writerOption func(w writer) writer
@@ -72,7 +72,7 @@ func newWriter(options ...writerOption) *writer {
 	return &w
 }
 
-func (w *writer) Write(bundlePath string, dest string) error {
+func (w *writer) Write(bundlePath string, dest string, forceInsecure bool) error {
 	r := w.reporter
 
 	r.Header("Write configuration to registry")
@@ -114,7 +114,7 @@ func (w *writer) Write(bundlePath string, dest string) error {
 	}
 
 	r.Reportf("Pushing new image to %s\n", dest)
-	return w.imageWriter(dest, image)
+	return w.imageWriter(dest, image, forceInsecure)
 }
 
 func (w *writer) createArchive(bundlePath string) ([]byte, error) {

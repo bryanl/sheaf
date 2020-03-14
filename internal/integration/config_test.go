@@ -289,15 +289,21 @@ func Test_sheaf_config_get(t *testing.T) {
 
 func Test_sheaf_config_push_and_pull(t *testing.T) {
 	withWorkingDirectory(t, func(wd string) {
-		r := newRegistry()
-		r.Start(t)
-		defer r.Stop(t)
-
+		registry := os.Getenv("REGISTRY")
 		refPath := fmt.Sprintf("/%s/%s:v1",
 			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset),
 			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
 
-		ref := r.Ref(t, refPath)
+		var ref string
+		if registry == "" {
+			r := newRegistry()
+			r.Start(t)
+			defer r.Stop(t)
+
+			ref = r.Ref(t, refPath)
+		} else {
+			ref = fmt.Sprintf("%s%s", registry, refPath)
+		}
 
 		b := sheafInit(t, testHarness, "integration", wd)
 
@@ -306,7 +312,7 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
 			"-f", testdata(t, "config", "push")))
 
-		pushArgs := append([]string{"config", "push", b.dir, ref})
+		pushArgs := append([]string{"config", "push", b.dir, ref, "--insecure-registry"})
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, pushArgs...))
 
 		dir, err := ioutil.TempDir("", "sheaf-test")
@@ -318,7 +324,7 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 
 		dest := filepath.Join(dir, "dest")
 
-		pullArgs := append([]string{"config", "pull", ref, dest})
+		pullArgs := append([]string{"config", "pull", ref, dest, "--insecure-registry"})
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, pullArgs...))
 
 		destConfig := filepath.Join(dest, "bundle.json")

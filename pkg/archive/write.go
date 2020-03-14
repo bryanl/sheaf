@@ -20,9 +20,9 @@ import (
 )
 
 // Write writes an archive's configuration to a registry.
-func Write(archivePath, dest string) error {
+func Write(archivePath, dest string, forceInsecure bool) error {
 	w := newWriter()
-	return w.Write(archivePath, dest)
+	return w.Write(archivePath, dest, forceInsecure)
 }
 
 type writeOption func(w writer) writer
@@ -34,7 +34,7 @@ func writerOptionArchiver(a sheaf.Archiver) writeOption {
 	}
 }
 
-type fsWriter func(bundlePath, dest string) error
+type fsWriter func(bundlePath, dest string, forceInsecure bool) error
 
 func writerOptionFSWriter(fw fsWriter) writeOption {
 	return func(w writer) writer {
@@ -46,7 +46,7 @@ func writerOptionFSWriter(fw fsWriter) writeOption {
 type writer struct {
 	archiver sheaf.Archiver
 	reporter reporter.Reporter
-	fsWriter func(bundlePath, dest string) error
+	fsWriter func(bundlePath, dest string, forceInsecure bool) error
 }
 
 func newWriter(options ...writeOption) *writer {
@@ -63,7 +63,7 @@ func newWriter(options ...writeOption) *writer {
 	return &w
 }
 
-func (w *writer) Write(archivePath, dest string) error {
+func (w *writer) Write(archivePath, dest string, forceInsecure bool) error {
 	w.reporter.Header("Staging archive to temporary directory")
 
 	dir, err := ioutil.TempDir("", "sheaf")
@@ -85,5 +85,5 @@ func (w *writer) Write(archivePath, dest string) error {
 		return fmt.Errorf("unable to clean artifacts directory: %w", err)
 	}
 
-	return w.fsWriter(dir, dest)
+	return w.fsWriter(dir, dest, forceInsecure)
 }
