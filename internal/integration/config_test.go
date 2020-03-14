@@ -20,7 +20,6 @@ import (
 
 	"github.com/bryanl/sheaf/internal/stringutil"
 	"github.com/bryanl/sheaf/pkg/images"
-	"github.com/bryanl/sheaf/pkg/remote"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -288,7 +287,7 @@ func Test_sheaf_config_get(t *testing.T) {
 	})
 }
 
-func Test_sheaf_config_push(t *testing.T) {
+func Test_sheaf_config_push_and_pull(t *testing.T) {
 	withWorkingDirectory(t, func(wd string) {
 		r := newRegistry()
 		r.Start(t)
@@ -307,21 +306,20 @@ func Test_sheaf_config_push(t *testing.T) {
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
 			"-f", testdata(t, "config", "push")))
 
-		args := append([]string{"config", "push", b.dir, ref})
-
-		err := b.harness.runSheaf(b.dir, settings, args...)
-		require.NoError(t, err)
+		pushArgs := append([]string{"config", "push", b.dir, ref})
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, pushArgs...))
 
 		dir, err := ioutil.TempDir("", "sheaf-test")
 		require.NoError(t, err)
-
-		dest := filepath.Join(dir, "dest")
 
 		defer func() {
 			require.NoError(t, os.RemoveAll(dir))
 		}()
 
-		require.NoError(t, remote.Write(ref, dest))
+		dest := filepath.Join(dir, "dest")
+
+		pullArgs := append([]string{"config", "pull", ref, dest})
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, pullArgs...))
 
 		destConfig := filepath.Join(dest, "bundle.json")
 		checkFileEquals(t, b.configFile(), destConfig)

@@ -71,7 +71,7 @@ func newWriter(options ...writerOption) *writer {
 func (w *writer) Write(refStr, dest string) error {
 	_, err := os.Stat(dest)
 	if err == nil {
-		return fmt.Errorf("destination already exists")
+		return fmt.Errorf("destination %s already exists", dest)
 	} else if !os.IsNotExist(err) {
 		return err
 	}
