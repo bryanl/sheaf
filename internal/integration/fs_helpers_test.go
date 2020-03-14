@@ -56,6 +56,11 @@ func checkFileMatches(t *testing.T, file string, want []byte) {
 	require.Equal(t, string(want), string(actual))
 }
 
+func checkFileEquals(t *testing.T, file1, file2 string) {
+	b := readFile(t, file1)
+	checkFileMatches(t, file2, b)
+}
+
 func readFile(t *testing.T, file string) []byte {
 	data, err := ioutil.ReadFile(file)
 	require.NoError(t, err)

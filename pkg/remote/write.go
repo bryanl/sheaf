@@ -19,10 +19,10 @@ import (
 )
 
 // Write writes a remote reference to a local destination.
-func Write(ref, dest string) error {
+func Write(ref, dest string, forceInsecure bool) error {
 	w := newWriter()
 
-	return w.Write(ref, dest)
+	return w.Write(ref, dest, forceInsecure)
 }
 
 type writerOption func(w writer) writer
@@ -68,10 +68,10 @@ func newWriter(options ...writerOption) *writer {
 	return &w
 }
 
-func (w *writer) Write(refStr, dest string) error {
+func (w *writer) Write(refStr, dest string, forceInsecure bool) error {
 	_, err := os.Stat(dest)
 	if err == nil {
-		return fmt.Errorf("destination already exists")
+		return fmt.Errorf("destination %s already exists", dest)
 	} else if !os.IsNotExist(err) {
 		return err
 	}
@@ -80,7 +80,7 @@ func (w *writer) Write(refStr, dest string) error {
 
 	w.reporter.Reportf("Pulling image %s from registry", refStr)
 
-	image, err := w.imageReader(refStr)
+	image, err := w.imageReader(refStr, forceInsecure)
 	if err != nil {
 		return err
 	}

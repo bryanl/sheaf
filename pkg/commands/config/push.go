@@ -11,11 +11,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/bryanl/sheaf/internal/fsutil"
 	"github.com/bryanl/sheaf/pkg/fs"
 )
 
 // NewPushCommand create a push command.
 func NewPushCommand() *cobra.Command {
+	var forceInsecure bool
+
 	cmd := cobra.Command{
 		Use:   "push",
 		Short: "push sheaf bundle config to registry",
@@ -23,15 +26,22 @@ func NewPushCommand() *cobra.Command {
 			if len(args) != 2 {
 				return fmt.Errorf("requires path to bundle and destination")
 			}
+
+			if !fsutil.IsDirectory(args[0]) {
+				return fmt.Errorf("%s is not a directory", args[0])
+			}
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			bundlePath := args[0]
 			dest := args[1]
 
-			return fs.Write(bundlePath, dest)
+			return fs.Write(bundlePath, dest, forceInsecure)
 		},
 	}
+
+	cmd.Flags().BoolVar(&forceInsecure, "insecure-registry", false, "insecure registry")
 
 	return &cmd
 }

@@ -16,6 +16,8 @@ import (
 
 // NewPushCommand create a push command.
 func NewPushCommand() *cobra.Command {
+	var forceInsecure bool
+
 	cmd := cobra.Command{
 		Use: "push",
 		// TODO: support relocating images
@@ -30,9 +32,11 @@ func NewPushCommand() *cobra.Command {
 			bundlePath := args[0]
 			dest := args[1]
 
-			return archive.Write(bundlePath, dest)
+			return archive.Write(bundlePath, dest, forceInsecure)
 		},
 	}
+
+	cmd.Flags().BoolVar(&forceInsecure, "insecure-registry", false, "insecure registry")
 
 	return &cmd
 }

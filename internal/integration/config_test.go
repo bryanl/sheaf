@@ -10,10 +10,15 @@ package integration_test
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/stringutil"
 	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
@@ -279,6 +284,61 @@ func Test_sheaf_config_get(t *testing.T) {
 		wanted = bytes.TrimSpace(wanted)
 
 		require.Equal(t, string(wanted), actual.String())
+	})
+}
+
+func Test_sheaf_config_push_and_pull(t *testing.T) {
+	withWorkingDirectory(t, func(wd string) {
+		registry := os.Getenv("REGISTRY")
+		refPath := fmt.Sprintf("/%s/%s:v1",
+			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset),
+			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
+
+		var ref string
+		if registry == "" {
+			r := newRegistry()
+			r.Start(t)
+			defer r.Stop(t)
+
+			ref = r.Ref(t, refPath)
+		} else {
+			ref = fmt.Sprintf("%s%s", registry, refPath)
+		}
+
+		b := sheafInit(t, testHarness, "integration", wd)
+
+		settings := defaultSheafRunSettings
+
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
+			"-f", testdata(t, "config", "push")))
+
+		pushArgs := append([]string{"config", "push", b.dir, ref, "--insecure-registry"})
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, pushArgs...))
+
+		dir, err := ioutil.TempDir("", "sheaf-test")
+		require.NoError(t, err)
+
+		defer func() {
+			require.NoError(t, os.RemoveAll(dir))
+		}()
+
+		dest := filepath.Join(dir, "dest")
+
+		pullArgs := append([]string{"config", "pull", ref, dest, "--insecure-registry"})
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, pullArgs...))
+
+		destConfig := filepath.Join(dest, "bundle.json")
+		checkFileEquals(t, b.configFile(), destConfig)
+
+		fis, err := ioutil.ReadDir(b.pathJoin("app", "manifests"))
+		require.NoError(t, err)
+
+		for _, fi := range fis {
+			cur := filepath.Join(dest, "app", "manifests", fi.Name())
+			checkFileEquals(t,
+				b.pathJoin("app", "manifests", fi.Name()),
+				cur)
+		}
 	})
 }
 

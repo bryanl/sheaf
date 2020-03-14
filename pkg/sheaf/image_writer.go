@@ -16,12 +16,17 @@ import (
 )
 
 // ImageWriter writes an image to a destination..
-type ImageWriter func(dest string, image v1.Image) error
+type ImageWriter func(dest string, image v1.Image, forceInsecure bool) error
 
 // DefaultImageWriter is the the default image writer which writes an image
 // to a container registry.
-func DefaultImageWriter(dest string, image v1.Image) error {
-	dstRef, err := name.ParseReference(dest)
+func DefaultImageWriter(dest string, image v1.Image, forceInsecure bool) error {
+	var nameOptions []name.Option
+	if forceInsecure {
+		nameOptions = append(nameOptions, name.Insecure)
+	}
+
+	dstRef, err := name.ParseReference(dest, nameOptions...)
 	if err != nil {
 		return fmt.Errorf("parse remote reference: %w", err)
 	}
