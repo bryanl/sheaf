@@ -81,8 +81,8 @@ func Test_sheaf_config_add_image(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				b.updateConfig(t, func(config *sheaf.BundleConfig) {
 					list, err := images.New(tc.initial)
@@ -194,8 +194,8 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				b.updateConfig(t, func(config *sheaf.BundleConfig) {
 					config.UserDefinedImages = tc.existing
@@ -249,8 +249,8 @@ func Test_sheaf_config_delete_udi(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 				b.updateConfig(t, func(config *sheaf.BundleConfig) {
 					config.UserDefinedImages = tc.existing
 				})
@@ -268,8 +268,8 @@ func Test_sheaf_config_delete_udi(t *testing.T) {
 }
 
 func Test_sheaf_config_get(t *testing.T) {
-	withWorkingDirectory(t, func(wd string) {
-		b := sheafInit(t, testHarness, "integration", wd)
+	withWorkingDirectory(t, func(options wdOptions) {
+		b := sheafInit(t, testHarness, "integration", options.dir)
 
 		settings := genSheafRunSettings()
 		var actual bytes.Buffer
@@ -288,7 +288,7 @@ func Test_sheaf_config_get(t *testing.T) {
 }
 
 func Test_sheaf_config_push_and_pull(t *testing.T) {
-	withWorkingDirectory(t, func(wd string) {
+	withWorkingDirectory(t, func(options wdOptions) {
 		registry := os.Getenv("REGISTRY")
 		refPath := fmt.Sprintf("/%s/%s:v1",
 			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset),
@@ -305,7 +305,7 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 			ref = fmt.Sprintf("%s%s", registry, refPath)
 		}
 
-		b := sheafInit(t, testHarness, "integration", wd)
+		b := sheafInit(t, testHarness, "integration", options.dir)
 
 		settings := defaultSheafRunSettings
 

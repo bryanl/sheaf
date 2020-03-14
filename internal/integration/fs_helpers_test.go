@@ -19,7 +19,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func withWorkingDirectory(t *testing.T, fn func(dir string)) {
+type wdOptions struct {
+	dir      string
+	registry string
+}
+
+func withWorkingDirectory(t *testing.T, fn func(options wdOptions)) {
 	workingDirectory, err := ioutil.TempDir("", "sheaf-test")
 	require.NoError(t, err)
 
@@ -29,7 +34,22 @@ func withWorkingDirectory(t *testing.T, fn func(dir string)) {
 		}
 	})
 
-	fn(workingDirectory)
+	registry := os.Getenv("REGISTRY")
+
+	if registry == "" {
+		r := newRegistry()
+		r.Start(t)
+		defer r.Stop(t)
+
+		registry = r.Port(t)
+	}
+
+	options := wdOptions{
+		dir:      workingDirectory,
+		registry: registry,
+	}
+
+	fn(options)
 }
 
 func stageFile(t *testing.T, srcPath, destPath string) {

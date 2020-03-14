@@ -102,8 +102,8 @@ func Test_sheaf_manifest_add(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				for _, f := range tc.files {
 					err = b.harness.runSheaf(b.dir, defaultSheafRunSettings, "manifest", "add", "-f", f)
@@ -160,8 +160,8 @@ func Test_sheaf_manifest_show(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				for _, manifest := range tc.manifests {
 					_, name := filepath.Split(manifest)

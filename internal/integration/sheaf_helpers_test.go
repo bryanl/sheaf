@@ -101,10 +101,11 @@ func (r *registry) Stop(t *testing.T) {
 
 func (r *registry) Ref(t *testing.T, path string) string {
 	require.True(t, r.started, "registry has not been started")
-	return fmt.Sprintf("%s%s", r.port(t), path)
+	return fmt.Sprintf("%s%s", r.Port(t), path)
 }
 
-func (r *registry) port(t *testing.T) string {
+func (r *registry) Port(t *testing.T) string {
+	require.True(t, r.started, "registry has not been started")
 	cmd := exec.Command("docker", "inspect",
 		"--format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostIP}}:{{(index $conf 0).HostPort}}{{end}}'",
 		r.id)
