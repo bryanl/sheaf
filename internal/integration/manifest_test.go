@@ -103,15 +103,15 @@ func Test_sheaf_manifest_add(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			withWorkingDirectory(t, func(wd string) {
-				bundleDir := initBundle(t, testHarness, "integration", wd)
+				b := sheafInit(t, testHarness, "integration", wd)
 
 				for _, f := range tc.files {
-					err = testHarness.runSheaf(bundleDir, defaultSheafRunSettings, "manifest", "add", "-f", f)
+					err = b.harness.runSheaf(b.dir, defaultSheafRunSettings, "manifest", "add", "-f", f)
 					require.NoError(t, err, "unable to add %s", f)
 				}
 
 				for _, w := range tc.want {
-					cur := filepath.Join(bundleDir, w.path)
+					cur := filepath.Join(b.dir, w.path)
 					checkFileExists(t, cur)
 					checkFileMatches(t, cur, w.contents)
 				}
@@ -161,13 +161,13 @@ func Test_sheaf_manifest_show(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			withWorkingDirectory(t, func(wd string) {
-				bundleDir := initBundle(t, testHarness, "integration", wd)
+				b := sheafInit(t, testHarness, "integration", wd)
 
 				for _, manifest := range tc.manifests {
 					_, name := filepath.Split(manifest)
 					stageFile(t,
 						manifest,
-						filepath.Join(bundleDir, "app", "manifests", name))
+						filepath.Join(b.dir, "app", "manifests", name))
 				}
 
 				settings := genSheafRunSettings()
@@ -176,7 +176,7 @@ func Test_sheaf_manifest_show(t *testing.T) {
 
 				args := append([]string{"manifest", "show"}, tc.args...)
 
-				err := testHarness.runSheaf(bundleDir, settings, args...)
+				err := b.harness.runSheaf(b.dir, settings, args...)
 				require.NoError(t, err)
 
 				require.Equal(t, string(tc.wanted), actual.String())

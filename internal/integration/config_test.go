@@ -9,7 +9,6 @@
 package integration_test
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -77,28 +76,23 @@ func Test_sheaf_config_add_image(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			withWorkingDirectory(t, func(wd string) {
-				bundleDir := initBundle(t, testHarness, "integration", wd)
+				b := sheafInit(t, testHarness, "integration", wd)
 
-				var config sheaf.BundleConfig
-				configFile := filepath.Join(bundleDir, "bundle.json")
-
-				if len(tc.initial) > 0 {
-					readJSONFile(t, configFile, &config)
+				b.updateConfig(t, func(config *sheaf.BundleConfig) {
 					list, err := images.New(tc.initial)
 					require.NoError(t, err)
 					config.Images = &list
-					writeJSONFile(t, configFile, config)
-				}
+				})
 
 				args := []string{"config", "add-image"}
 				for i := range tc.images {
 					args = append(args, "-i", tc.images[i])
 				}
 
-				err := testHarness.runSheaf(bundleDir, defaultSheafRunSettings, args...)
+				err := b.harness.runSheaf(b.dir, defaultSheafRunSettings, args...)
 				require.NoError(t, err)
 
-				readJSONFile(t, configFile, &config)
+				config := b.readConfig(t)
 
 				var actual []string
 				if config.Images != nil {
@@ -195,28 +189,90 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			withWorkingDirectory(t, func(wd string) {
-				bundleDir := initBundle(t, testHarness, "integration", wd)
+				b := sheafInit(t, testHarness, "integration", wd)
 
-				var config sheaf.BundleConfig
-				configFile := filepath.Join(bundleDir, "bundle.json")
-
-				if len(tc.existing) > 0 {
-					readJSONFile(t, configFile, &config)
+				b.updateConfig(t, func(config *sheaf.BundleConfig) {
 					config.UserDefinedImages = tc.existing
-					writeJSONFile(t, configFile, config)
-				}
+				})
 
 				args := append([]string{"config", "set-udi"}, tc.udi.toArgs()...)
 
-				err := testHarness.runSheaf(bundleDir, defaultSheafRunSettings, args...)
+				err := testHarness.runSheaf(b.dir, defaultSheafRunSettings, args...)
 				require.NoError(t, err)
 
-				readJSONFile(t, configFile, &config)
+				config := b.readConfig(t)
 
 				require.Equal(t, tc.wanted, config.UserDefinedImages)
 			})
 		})
 	}
+}
+
+func Test_sheaf_config_delete_udi(t *testing.T) {
+	cases := []struct {
+		name     string
+		existing []sheaf.UserDefinedImage
+		id       udiID
+		wanted   []sheaf.UserDefinedImage
+	}{
+		{
+			name: "delete user defined image",
+			existing: []sheaf.UserDefinedImage{
+				{
+					APIVersion: "example.com/v1",
+					Kind:       "Resource",
+					JSONPath:   "{.spec.image}",
+					Type:       sheaf.SingleResult,
+				},
+			},
+			id: udiID{
+				APIVersion: "example.com/v1",
+				Kind:       "Resource",
+			},
+			wanted: nil,
+		},
+		{
+			name: "delete user defined image that does not exist",
+			id: udiID{
+				APIVersion: "example.com/v1",
+				Kind:       "Resource",
+			},
+			wanted: nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			withWorkingDirectory(t, func(wd string) {
+				b := sheafInit(t, testHarness, "integration", wd)
+				b.updateConfig(t, func(config *sheaf.BundleConfig) {
+					config.UserDefinedImages = tc.existing
+				})
+
+				args := append([]string{"config", "delete-udi"}, tc.id.toArgs()...)
+
+				err := testHarness.runSheaf(b.dir, defaultSheafRunSettings, args...)
+				require.NoError(t, err)
+
+				config := b.readConfig(t)
+				require.Equal(t, tc.wanted, config.UserDefinedImages)
+			})
+		})
+	}
+}
+
+type udiID struct {
+	APIVersion string
+	Kind       string
+}
+
+func (u udiID) toArgs() []string {
+	args := []string{
+		"--api-version", u.APIVersion,
+		"--kind", u.Kind,
+	}
+
+	return args
 }
 
 type udi struct {
