@@ -88,6 +88,9 @@ func (r *registry) Start(t *testing.T) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	_, err := exec.LookPath("docker")
+	require.NoError(t, err, "docker binary is not available")
+
 	require.False(t, r.started, "registry has already been started")
 
 	cmd := exec.Command("docker", "run", "-p", "5000", "--rm", "-d", "registry:2")
