@@ -7,8 +7,11 @@
 package archive
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
+	"github.com/bryanl/sheaf/internal/fsutil"
 	"github.com/bryanl/sheaf/pkg/fs"
 )
 
@@ -20,7 +23,17 @@ func NewPackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pack",
 		Short: "Pack a bundle",
-		Args:  cobra.MaximumNArgs(1),
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 1 {
+				return fmt.Errorf("archive pack <bundle directory>")
+			} else if len(args) == 1 {
+				if !fsutil.IsDirectory(args[0]) {
+					return fmt.Errorf("%s is not a directory", args[0])
+				}
+			}
+
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dest := "."
 			if len(args) > 0 {

@@ -73,12 +73,27 @@ func checkFileMatches(t *testing.T, file string, want []byte) {
 	actual, err := ioutil.ReadFile(file)
 	require.NoError(t, err)
 
-	require.Equal(t, string(want), string(actual))
+	require.Equal(t, string(want), string(actual), "%s did not match wanted value", file)
 }
 
 func checkFileEquals(t *testing.T, file1, file2 string) {
 	b := readFile(t, file1)
 	checkFileMatches(t, file2, b)
+}
+
+func checkBundleEquals(t *testing.T, b *bundle, dest string) {
+	destConfig := filepath.Join(dest, "bundle.json")
+	checkFileEquals(t, b.configFile(), destConfig)
+
+	fis, err := ioutil.ReadDir(b.pathJoin("app", "manifests"))
+	require.NoError(t, err)
+
+	for _, fi := range fis {
+		cur := filepath.Join(dest, "app", "manifests", fi.Name())
+		checkFileEquals(t,
+			b.pathJoin("app", "manifests", fi.Name()),
+			cur)
+	}
 }
 
 func readFile(t *testing.T, file string) []byte {

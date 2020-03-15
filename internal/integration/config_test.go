@@ -10,7 +10,6 @@ package integration_test
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,7 +17,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bryanl/sheaf/internal/stringutil"
 	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
@@ -84,7 +82,7 @@ func Test_sheaf_config_add_image(t *testing.T) {
 			withWorkingDirectory(t, func(options wdOptions) {
 				b := sheafInit(t, testHarness, "integration", options.dir)
 
-				b.updateConfig(t, func(config *sheaf.BundleConfig) {
+				b.updateConfig(func(config *sheaf.BundleConfig) {
 					list, err := images.New(tc.initial)
 					require.NoError(t, err)
 					config.Images = &list
@@ -98,7 +96,7 @@ func Test_sheaf_config_add_image(t *testing.T) {
 				err := b.harness.runSheaf(b.dir, defaultSheafRunSettings, args...)
 				require.NoError(t, err)
 
-				config := b.readConfig(t)
+				config := b.readConfig()
 
 				var actual []string
 				if config.Images != nil {
@@ -197,7 +195,7 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 			withWorkingDirectory(t, func(options wdOptions) {
 				b := sheafInit(t, testHarness, "integration", options.dir)
 
-				b.updateConfig(t, func(config *sheaf.BundleConfig) {
+				b.updateConfig(func(config *sheaf.BundleConfig) {
 					config.UserDefinedImages = tc.existing
 				})
 
@@ -206,7 +204,7 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 				err := testHarness.runSheaf(b.dir, defaultSheafRunSettings, args...)
 				require.NoError(t, err)
 
-				config := b.readConfig(t)
+				config := b.readConfig()
 
 				require.Equal(t, tc.wanted, config.UserDefinedImages)
 			})
@@ -251,7 +249,7 @@ func Test_sheaf_config_delete_udi(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			withWorkingDirectory(t, func(options wdOptions) {
 				b := sheafInit(t, testHarness, "integration", options.dir)
-				b.updateConfig(t, func(config *sheaf.BundleConfig) {
+				b.updateConfig(func(config *sheaf.BundleConfig) {
 					config.UserDefinedImages = tc.existing
 				})
 
@@ -260,7 +258,7 @@ func Test_sheaf_config_delete_udi(t *testing.T) {
 				err := testHarness.runSheaf(b.dir, defaultSheafRunSettings, args...)
 				require.NoError(t, err)
 
-				config := b.readConfig(t)
+				config := b.readConfig()
 				require.Equal(t, tc.wanted, config.UserDefinedImages)
 			})
 		})
@@ -289,21 +287,6 @@ func Test_sheaf_config_get(t *testing.T) {
 
 func Test_sheaf_config_push_and_pull(t *testing.T) {
 	withWorkingDirectory(t, func(options wdOptions) {
-		registry := os.Getenv("REGISTRY")
-		refPath := fmt.Sprintf("/%s/%s:v1",
-			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset),
-			stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
-
-		var ref string
-		if registry == "" {
-			r := newRegistry()
-			r.Start(t)
-			defer r.Stop(t)
-
-			ref = r.Ref(t, refPath)
-		} else {
-			ref = fmt.Sprintf("%s%s", registry, refPath)
-		}
 
 		b := sheafInit(t, testHarness, "integration", options.dir)
 
@@ -311,6 +294,8 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
 			"-f", testdata(t, "config", "push")))
+
+		ref := genRegistryPath(options)
 
 		pushArgs := append([]string{"config", "push", b.dir, ref, "--insecure-registry"})
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, pushArgs...))
@@ -327,18 +312,7 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 		pullArgs := append([]string{"config", "pull", ref, dest, "--insecure-registry"})
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, pullArgs...))
 
-		destConfig := filepath.Join(dest, "bundle.json")
-		checkFileEquals(t, b.configFile(), destConfig)
-
-		fis, err := ioutil.ReadDir(b.pathJoin("app", "manifests"))
-		require.NoError(t, err)
-
-		for _, fi := range fis {
-			cur := filepath.Join(dest, "app", "manifests", fi.Name())
-			checkFileEquals(t,
-				b.pathJoin("app", "manifests", fi.Name()),
-				cur)
-		}
+		checkBundleEquals(t, b, dest)
 	})
 }
 

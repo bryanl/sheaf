@@ -11,6 +11,7 @@ package integration_test
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -71,8 +72,8 @@ func genSheafRunSettings() sheafRunSettings {
 var (
 	defaultSheafRunSettings = sheafRunSettings{
 		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		Stdout: ioutil.Discard,
+		Stderr: ioutil.Discard,
 	}
 )
 
