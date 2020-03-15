@@ -16,6 +16,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/pivotal/image-relocation/pkg/image"
+	"github.com/pivotal/image-relocation/pkg/pathmapping"
 	"github.com/stretchr/testify/require"
 
 	"github.com/bryanl/sheaf/pkg/sheaf"
@@ -50,8 +54,6 @@ func Test_sheaf_archive_push(t *testing.T) {
 	withWorkingDirectory(t, func(options wdOptions) {
 		b := sheafInit(t, testHarness, "integration", options.dir)
 
-		genSheafRunSettings()
-
 		settings := defaultSheafRunSettings
 
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
@@ -78,5 +80,38 @@ func Test_sheaf_archive_push(t *testing.T) {
 		require.NoError(t, b.harness.runSheaf(b.dir, settings, pullArgs...))
 
 		checkBundleEquals(t, b, dest)
+	})
+}
+
+func Test_sheaf_archive_relocate(t *testing.T) {
+	withWorkingDirectory(t, func(options wdOptions) {
+		b := sheafInit(t, testHarness, "integration", options.dir)
+
+		settings := defaultSheafRunSettings
+
+		require.NoError(t, b.harness.runSheaf(b.dir, settings, "manifest", "add",
+			"-f", testdata(t, "archive", "relocate")))
+
+		require.NoError(t, b.harness.runSheaf(options.dir, settings, "archive", "pack",
+			"--bundle-path", b.dir))
+
+		archivePath := filepath.Join(options.dir, b.archiveName())
+		ref := genRegistryRoot(options)
+		require.NoError(t, b.harness.runSheaf(options.dir, settings, "archive", "relocate",
+			archivePath, ref, "--insecure-registry"))
+
+		originalName, err := image.NewName("docker.io/bryanl/slim-hello-world")
+		require.NoError(t, err, "unable to generate name")
+
+		expectedRepo, err := pathmapping.FlattenRepoPathPreserveTagDigest(ref, originalName)
+		require.NoError(t, err)
+
+		repo, err := name.NewRepository(expectedRepo.String(), name.Insecure)
+		require.NoError(t, err)
+
+		tags, err := remote.List(repo)
+		require.NoError(t, err)
+
+		require.Contains(t, tags, "v1")
 	})
 }

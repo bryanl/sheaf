@@ -8,7 +8,10 @@ package fs
 
 import (
 	"fmt"
+	"path/filepath"
 
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	layout2 "github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/pathmapping"
 
@@ -18,6 +21,14 @@ import (
 
 // ImageRelocatorOption is a functional option for configuring ImageRelocator.
 type ImageRelocatorOption func(is ImageRelocator) ImageRelocator
+
+// ImageRelocatorLayoutFactory configuration the layout factory.
+func ImageRelocatorLayoutFactory(lf LayoutFactory) ImageRelocatorOption {
+	return func(is ImageRelocator) ImageRelocator {
+		is.layoutFactory = lf
+		return is
+	}
+}
 
 // ImageRelocatorDryRun configures ImageRelocator to do a dry run.
 func ImageRelocatorDryRun(dryRun bool) ImageRelocatorOption {
@@ -30,6 +41,7 @@ func ImageRelocatorDryRun(dryRun bool) ImageRelocatorOption {
 // ImageRelocator relocates images to a registry.
 type ImageRelocator struct {
 	layoutFactory LayoutFactory
+	imageWriter   sheaf.ImageWriter
 	reporter      reporter.Reporter
 	dryRun        bool
 }
@@ -41,6 +53,7 @@ func NewImageRelocator(options ...ImageRelocatorOption) *ImageRelocator {
 	is := ImageRelocator{
 		layoutFactory: DefaultLayoutFactory(),
 		reporter:      reporter.Default,
+		imageWriter:   sheaf.DefaultImageWriter,
 	}
 
 	for _, option := range options {
@@ -51,10 +64,15 @@ func NewImageRelocator(options ...ImageRelocatorOption) *ImageRelocator {
 }
 
 // Relocate relocates images to a registry given a prefix.
-func (i ImageRelocator) Relocate(rootPath, prefix string, images []image.Name) error {
+func (i ImageRelocator) Relocate(rootPath, prefix string, images []image.Name, forceInsecure bool) error {
 	layout, err := i.layoutFactory(rootPath)
 	if err != nil {
 		return fmt.Errorf("create layout: %w", err)
+	}
+
+	p, err := layout2.FromPath(filepath.Join(rootPath, "artifacts", "layout"))
+	if err != nil {
+		return fmt.Errorf("load layout from path: %w", err)
 	}
 
 	for _, imageName := range images {
@@ -73,9 +91,23 @@ func (i ImageRelocator) Relocate(rootPath, prefix string, images []image.Name) e
 			continue
 		}
 
-		if err := layout.Push(imageDigest, newImageName); err != nil {
-			return fmt.Errorf("push %s: %w", newImageName.String(), err)
+		h, err := v1.NewHash(imageDigest.String())
+		if err != nil {
+			return fmt.Errorf("create hash for image %s", imageName.String())
 		}
+
+		img, err := p.Image(h)
+		if err != nil {
+			return fmt.Errorf("load image %s", imageName.String())
+		}
+
+		if err := i.imageWriter(newImageName.String(), img, forceInsecure); err != nil {
+			return fmt.Errorf("push %s: %w", newImageName, err)
+		}
+
+		// if err := layout.Push(imageDigest, newImageName); err != nil {
+		// 	return fmt.Errorf("push %s: %w", newImageName.String(), err)
+		// }
 	}
 
 	return nil

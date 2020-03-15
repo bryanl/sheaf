@@ -53,14 +53,6 @@ func StagerOptionBundleFactory(bf sheaf.BundleFactory) StagerOption {
 	}
 }
 
-// StagerOptionBundleReporter sets the bundle reporter.
-func StagerOptionBundleReporter(r reporter.Reporter) StagerOption {
-	return func(s Stager) Stager {
-		s.reporter = r
-		return s
-	}
-}
-
 // Stager stages an archive.
 type Stager struct {
 	archiver       sheaf.Archiver
@@ -88,7 +80,7 @@ func NewStager(options ...StagerOption) *Stager {
 }
 
 // Stage stages an archive to a registry given a prefix.
-func (s Stager) Stage(archiveURI, registryPrefix string) error {
+func (s Stager) Stage(archiveURI, registryPrefix string, forceInsecure bool) error {
 	s.reporter.Headerf("Relocating images in %s", archiveURI)
 
 	unpackDir, err := ioutil.TempDir("", "sheaf")
@@ -118,7 +110,7 @@ func (s Stager) Stage(archiveURI, registryPrefix string) error {
 	}
 
 	s.reporter.Header("Moving images to new location")
-	if err := s.imageRelocator.Relocate(unpackDir, registryPrefix, list.Slice()); err != nil {
+	if err := s.imageRelocator.Relocate(unpackDir, registryPrefix, list.Slice(), forceInsecure); err != nil {
 		return fmt.Errorf("stage images: %w", err)
 	}
 

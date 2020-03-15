@@ -41,5 +41,5 @@ type Packer interface {
 
 // ImageRelocator relocates an images to another registry.
 type ImageRelocator interface {
-	Relocate(rootPath, prefix string, images []image.Name) error
+	Relocate(rootPath, prefix string, images []image.Name, forceInsecure bool) error
 }

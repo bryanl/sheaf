@@ -136,9 +136,16 @@ func (r *registry) Port(t *testing.T) string {
 }
 
 func genRegistryPath(options wdOptions) string {
-	refPath := fmt.Sprintf("/%s/%s:v1",
-		stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset),
+	imageName := fmt.Sprintf("%s:v1",
 		stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
 
-	return fmt.Sprintf("%s%s", options.registry, refPath)
+	return fmt.Sprintf("%s/%s", genRegistryRoot(options), imageName)
+}
+
+func genRegistryRoot(options wdOptions) string {
+	root := fmt.Sprintf("/%s",
+		stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
+
+	return fmt.Sprintf("%s%s", options.registry, root)
+
 }

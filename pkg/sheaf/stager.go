@@ -9,5 +9,5 @@ package sheaf
 // Stager is the interface that wraps the Stage function.
 type Stager interface {
 	// Stage stages an archive by URI to a registry given a prefix.
-	Stage(archiveURI, registryPrefix string) error
+	Stage(archiveURI, registryPrefix string, insecureRegistry bool) error
 }
