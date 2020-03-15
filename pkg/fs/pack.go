@@ -28,7 +28,7 @@ type PackConfig struct {
 func Pack(config PackConfig) error {
 	bundle, err := config.BundleFactory(config.BundleURI)
 	if err != nil {
-		return fmt.Errorf("open fs: %w", err)
+		return fmt.Errorf("open bundle at %s: %w", config.BundleURI, err)
 	}
 
 	bundleConfig := bundle.Config()

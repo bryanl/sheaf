@@ -18,7 +18,7 @@ import (
 func Test_sheaf_init(t *testing.T) {
 	bundleName := "my-bundle"
 
-	withWorkingDirectory(t, func(wd string) {
+	withWorkingDirectory(t, func(options wdOptions) {
 
 		cases := []struct {
 			name          string
@@ -44,7 +44,7 @@ func Test_sheaf_init(t *testing.T) {
 		}
 
 		for _, tc := range cases {
-			sir := newSheafInitRunner(t, testHarness, tc.name, wd, tc.bundleName, tc.runnerOptions...)
+			sir := newSheafInitRunner(t, testHarness, tc.name, options.dir, tc.bundleName, tc.runnerOptions...)
 			sir.Run(tc.args...)
 		}
 	})
@@ -90,7 +90,7 @@ func (r *sheafInitRunner) Run(args ...string) {
 			root = filepath.Join(r.workingDirectory, r.bundlePath)
 		}
 
-		err := r.harness.runSheaf(r.workingDirectory, defaultSheafRunSettings, args...)
+		_, err := r.harness.runSheaf(r.workingDirectory, args...)
 		require.NoError(t, err)
 
 		t.Run("creates a bundle directory", func(t *testing.T) {

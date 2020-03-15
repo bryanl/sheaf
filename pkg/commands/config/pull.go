@@ -19,6 +19,7 @@ func NewPullCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "pull",
 		Short: "pull sheaf bundle config from registry",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ref := args[0]
 			dest := args[1]

@@ -9,6 +9,7 @@
 package integration_test
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -68,22 +69,28 @@ func genSheafRunSettings() sheafRunSettings {
 	}
 }
 
-var (
-	defaultSheafRunSettings = sheafRunSettings{
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
-)
+type sheafOutput struct {
+	Stdout bytes.Buffer
+	Stderr bytes.Buffer
+}
 
-func (r harness) runSheaf(workingDirectory string, settings sheafRunSettings, args ...string) error {
+func (r harness) runSheaf(workingDirectory string, args ...string) (*sheafOutput, error) {
 	cmd := exec.Command(r.sheafBin, args...)
-	cmd.Stdin = settings.Stdin
-	cmd.Stdout = settings.Stdout
-	cmd.Stderr = settings.Stderr
+
+	var stdout, stderr bytes.Buffer
+
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 	cmd.Dir = workingDirectory
 
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("run sheaf: %w", err)
+	}
+
+	return &sheafOutput{
+		Stdout: stdout,
+		Stderr: stderr,
+	}, nil
 }
 
 func (r harness) cleanup() error {

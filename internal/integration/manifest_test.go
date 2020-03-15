@@ -9,7 +9,6 @@
 package integration_test
 
 import (
-	"bytes"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -102,11 +101,11 @@ func Test_sheaf_manifest_add(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				for _, f := range tc.files {
-					err = b.harness.runSheaf(b.dir, defaultSheafRunSettings, "manifest", "add", "-f", f)
+					_, err = b.harness.runSheaf(b.dir, "manifest", "add", "-f", f)
 					require.NoError(t, err, "unable to add %s", f)
 				}
 
@@ -160,8 +159,8 @@ func Test_sheaf_manifest_show(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(wd string) {
-				b := sheafInit(t, testHarness, "integration", wd)
+			withWorkingDirectory(t, func(options wdOptions) {
+				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				for _, manifest := range tc.manifests {
 					_, name := filepath.Split(manifest)
@@ -170,16 +169,12 @@ func Test_sheaf_manifest_show(t *testing.T) {
 						filepath.Join(b.dir, "app", "manifests", name))
 				}
 
-				settings := genSheafRunSettings()
-				var actual bytes.Buffer
-				settings.Stdout = &actual
-
 				args := append([]string{"manifest", "show"}, tc.args...)
 
-				err := b.harness.runSheaf(b.dir, settings, args...)
+				output, err := b.harness.runSheaf(b.dir, args...)
 				require.NoError(t, err)
 
-				require.Equal(t, string(tc.wanted), actual.String())
+				require.Equal(t, string(tc.wanted), output.Stdout.String())
 			})
 
 		})

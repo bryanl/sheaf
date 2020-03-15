@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/Microsoft/hcsshim v0.8.7 // indirect
 	github.com/containerd/continuity v0.0.0-20200107194136-26c1120b8d41
+	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492 // indirect
 	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce

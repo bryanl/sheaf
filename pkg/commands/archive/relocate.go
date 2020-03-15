@@ -11,13 +11,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	archive2 "github.com/bryanl/sheaf/pkg/archive"
+	"github.com/bryanl/sheaf/pkg/archive"
 	"github.com/bryanl/sheaf/pkg/fs"
 )
 
 // NewStageCommand creates a stage command.
 func NewStageCommand() *cobra.Command {
 	var dryRun bool
+	var forceInsecure bool
 
 	cmd := &cobra.Command{
 		Use:   "relocate",
@@ -30,17 +31,26 @@ func NewStageCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var bfOptions []fs.LayoutOptionFunc
+			if forceInsecure {
+				bfOptions = append(bfOptions, fs.DefaultLayoutFactoryInsecureSkipVerify())
+			}
+
+			bf := fs.DefaultLayoutFactory(bfOptions...)
+
 			relocator := fs.NewImageRelocator(
-				fs.ImageRelocatorDryRun(dryRun))
+				fs.ImageRelocatorDryRun(dryRun),
+				fs.ImageRelocatorLayoutFactory(bf))
 
-			stager := archive2.NewStager(
-				archive2.StagerOptionImageRelocator(relocator))
+			stager := archive.NewStager(
+				archive.StagerOptionImageRelocator(relocator))
 
-			return stager.Stage(args[0], args[1])
+			return stager.Stage(args[0], args[1], forceInsecure)
 		},
 	}
 
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry run")
+	cmd.Flags().BoolVar(&forceInsecure, "insecure-registry", false, "insecure registry")
 
 	return cmd
 }

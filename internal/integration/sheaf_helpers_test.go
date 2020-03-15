@@ -18,38 +18,45 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/stringutil"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 func sheafInit(t *testing.T, h *harness, name, wd string) *bundle {
-	err := h.runSheaf(wd, defaultSheafRunSettings, "init", name)
+	_, err := h.runSheaf(wd, "init", name)
 	require.NoError(t, err, "initialize sheaf bundle")
 
+	return newBundle(t, filepath.Join(wd, name), h)
+}
+
+type bundle struct {
+	t       *testing.T
+	dir     string
+	harness *harness
+}
+
+func newBundle(t *testing.T, dir string, h *harness) *bundle {
 	b := bundle{
-		dir:     filepath.Join(wd, name),
+		t:       t,
+		dir:     dir,
 		harness: h,
 	}
 
 	return &b
 }
 
-type bundle struct {
-	dir     string
-	harness *harness
-}
-
-func (b bundle) readConfig(t *testing.T) sheaf.BundleConfig {
+func (b bundle) readConfig() sheaf.BundleConfig {
 	var config sheaf.BundleConfig
-	readJSONFile(t, b.configFile(), &config)
+	readJSONFile(b.t, b.configFile(), &config)
 	return config
 }
 
-func (b bundle) updateConfig(t *testing.T, fn func(config *sheaf.BundleConfig)) {
+func (b bundle) updateConfig(fn func(config *sheaf.BundleConfig)) {
 	var config sheaf.BundleConfig
-	readJSONFile(t, b.configFile(), &config)
+	readJSONFile(b.t, b.configFile(), &config)
 
 	fn(&config)
-	writeJSONFile(t, b.configFile(), config)
+	writeJSONFile(b.t, b.configFile(), config)
 }
 
 func (b bundle) configFile() string {
@@ -58,6 +65,11 @@ func (b bundle) configFile() string {
 
 func (b bundle) pathJoin(parts ...string) string {
 	return filepath.Join(append([]string{b.dir}, parts...)...)
+}
+
+func (b bundle) archiveName() string {
+	config := b.readConfig()
+	return fmt.Sprintf("%s-%s.tgz", config.Name, config.Version)
 }
 
 type registry struct {
@@ -101,10 +113,11 @@ func (r *registry) Stop(t *testing.T) {
 
 func (r *registry) Ref(t *testing.T, path string) string {
 	require.True(t, r.started, "registry has not been started")
-	return fmt.Sprintf("%s%s", r.port(t), path)
+	return fmt.Sprintf("%s%s", r.Port(t), path)
 }
 
-func (r *registry) port(t *testing.T) string {
+func (r *registry) Port(t *testing.T) string {
+	require.True(t, r.started, "registry has not been started")
 	cmd := exec.Command("docker", "inspect",
 		"--format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostIP}}:{{(index $conf 0).HostPort}}{{end}}'",
 		r.id)
@@ -120,4 +133,19 @@ func (r *registry) port(t *testing.T) string {
 	}
 
 	return port
+}
+
+func genRegistryPath(options wdOptions) string {
+	imageName := fmt.Sprintf("%s:v1",
+		stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
+
+	return fmt.Sprintf("%s/%s", genRegistryRoot(options), imageName)
+}
+
+func genRegistryRoot(options wdOptions) string {
+	root := fmt.Sprintf("/%s",
+		stringutil.RandomWithCharset(6, stringutil.LowerAlphaCharset))
+
+	return fmt.Sprintf("%s%s", options.registry, root)
+
 }

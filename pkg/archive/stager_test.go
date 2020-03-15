@@ -37,7 +37,7 @@ func TestStager_Stage(t *testing.T) {
 	imageList, err := images.New([]string{"docker.io/library/image"})
 	require.NoError(t, err)
 	imageRelocator.EXPECT().
-		Relocate(gomock.Any(), "registry-prefix", imageList.Slice()).
+		Relocate(gomock.Any(), "registry-prefix", imageList.Slice(), false).
 		Return(nil)
 
 	s := NewStager(
@@ -46,5 +46,5 @@ func TestStager_Stage(t *testing.T) {
 		StagerOptionBundleFactory(bundleFactory),
 		StagerOptionImageRelocator(imageRelocator))
 
-	require.NoError(t, s.Stage("archive-uri", "registry-prefix"))
+	require.NoError(t, s.Stage("archive-uri", "registry-prefix", false))
 }

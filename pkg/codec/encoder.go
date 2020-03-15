@@ -7,7 +7,9 @@
 package codec
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
@@ -22,7 +24,16 @@ type JSONEncoder struct{}
 
 var _ sheaf.Encoder = &JSONEncoder{}
 
-// Encode encodes a value to JSON.
+// Encode encodes a value to indented. JSON.
 func (e JSONEncoder) Encode(v interface{}) ([]byte, error) {
-	return json.MarshalIndent(v, "", "  ")
+	var b bytes.Buffer
+
+	enc := json.NewEncoder(&b)
+	enc.SetIndent("", "  ")
+
+	if err := enc.Encode(v); err != nil {
+		return nil, fmt.Errorf("json encode: %w", err)
+	}
+
+	return b.Bytes(), nil
 }
