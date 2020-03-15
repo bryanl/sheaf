@@ -90,7 +90,7 @@ func (r *sheafInitRunner) Run(args ...string) {
 			root = filepath.Join(r.workingDirectory, r.bundlePath)
 		}
 
-		err := r.harness.runSheaf(r.workingDirectory, defaultSheafRunSettings, args...)
+		_, err := r.harness.runSheaf(r.workingDirectory, args...)
 		require.NoError(t, err)
 
 		t.Run("creates a bundle directory", func(t *testing.T) {

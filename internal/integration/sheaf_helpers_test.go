@@ -23,7 +23,7 @@ import (
 )
 
 func sheafInit(t *testing.T, h *harness, name, wd string) *bundle {
-	err := h.runSheaf(wd, defaultSheafRunSettings, "init", name)
+	_, err := h.runSheaf(wd, "init", name)
 	require.NoError(t, err, "initialize sheaf bundle")
 
 	return newBundle(t, filepath.Join(wd, name), h)
