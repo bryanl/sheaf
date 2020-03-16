@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/bryanl/sheaf/internal/testutil"
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 func TestImageAdder_Add(t *testing.T) {
@@ -32,7 +32,7 @@ func TestImageAdder_Add(t *testing.T) {
 	written := false
 	writer := func(bundle sheaf.Bundle, config sheaf.BundleConfig) error {
 		written = true
-		want, err := images.New([]string{"docker.io/library/image"})
+		want, err := images.New("docker.io/library/image")
 		require.NoError(t, err)
 		require.Equal(t, &want, config.Images)
 		return nil

@@ -7,8 +7,8 @@
 package fs
 
 import (
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 // ImageAdderOption is a functional option for ImageAdder.
@@ -45,7 +45,7 @@ func (ia *ImageAdder) Add(imageList ...string) error {
 
 	bc := b.Config()
 
-	im, err := images.New(imageList)
+	im, err := images.New(imageList...)
 	if err != nil {
 		return err
 	}

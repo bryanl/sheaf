@@ -5,10 +5,11 @@
 package mocks
 
 import (
-	images "github.com/bryanl/sheaf/pkg/images"
+	reflect "reflect"
+
 	sheaf "github.com/bryanl/sheaf/pkg/sheaf"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
+	images "github.com/pivotal/image-relocation/pkg/images"
 )
 
 // MockBundle is a mock of Bundle interface

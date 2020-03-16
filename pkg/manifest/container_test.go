@@ -14,9 +14,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/manifest"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 func TestContainers(t *testing.T) {
@@ -122,7 +122,7 @@ func TestContainers(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			expected, err := images.New(tt.expected)
+			expected, err := images.New(tt.expected...)
 			require.NoError(t, err)
 			require.Equal(t, expected, got)
 		})

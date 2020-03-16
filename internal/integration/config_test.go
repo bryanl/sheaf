@@ -17,8 +17,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 func Test_sheaf_config_add_image(t *testing.T) {
@@ -83,7 +83,7 @@ func Test_sheaf_config_add_image(t *testing.T) {
 				b := sheafInit(t, testHarness, "integration", options.dir)
 
 				b.updateConfig(func(config *sheaf.BundleConfig) {
-					list, err := images.New(tc.initial)
+					list, err := images.New(tc.initial...)
 					require.NoError(t, err)
 					config.Images = &list
 				})

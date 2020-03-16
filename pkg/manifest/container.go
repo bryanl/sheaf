@@ -16,8 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/util/jsonpath"
 
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 // ContainerImages returns images from containers in manifest path
@@ -40,7 +40,7 @@ func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage
 			return images.Empty, fmt.Errorf("json path search: %w", err)
 		}
 
-		bufImages, err := images.New(results)
+		bufImages, err := images.New(results...)
 		if err != nil {
 			return images.Empty, err
 		}
@@ -59,7 +59,7 @@ func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage
 					return images.Empty, fmt.Errorf("user defined image search %q: %w", udi.JSONPath, err)
 				}
 
-				bufImages, err = images.New([]string{result})
+				bufImages, err = images.New(result)
 				if err != nil {
 					return images.Empty, err
 				}
@@ -73,7 +73,7 @@ func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage
 					results = []string{}
 				}
 
-				bufImages, err = images.New(results)
+				bufImages, err = images.New(results...)
 				if err != nil {
 					return images.Empty, err
 				}
