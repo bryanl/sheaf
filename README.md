@@ -1,6 +1,6 @@
 # sheaf
 
-, `sheaf` manages bundles of Kubernetes components.
+Manages bundles of Kubernetes components.
 
 `sheaf` is a tool that can create a `bundle` of Kubernetes components. It can generate an archive from the bundle
 that can be distributed for use in Kubernetes clusters. The initial idea was inspired by inspired by 
