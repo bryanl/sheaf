@@ -9,7 +9,7 @@ package sheaf
 import (
 	"io"
 
-	"github.com/bryanl/sheaf/pkg/images"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 //go:generate mockgen -destination=../mocks/mock_bundle.go -package mocks github.com/bryanl/sheaf/pkg/sheaf Bundle

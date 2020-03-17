@@ -12,7 +12,7 @@ import (
 	"go.uber.org/multierr"
 	"k8s.io/client-go/util/jsonpath"
 
-	"github.com/bryanl/sheaf/pkg/images"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 const (

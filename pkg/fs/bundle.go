@@ -15,10 +15,10 @@ import (
 	"strings"
 
 	"github.com/bryanl/sheaf/pkg/codec"
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/manifest"
 	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 // DefaultBundleConfigWriter is the default bundle config writer.

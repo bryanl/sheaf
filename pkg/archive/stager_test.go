@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/bryanl/sheaf/internal/testutil"
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/mocks"
 	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 func TestStager_Stage(t *testing.T) {
@@ -34,7 +34,7 @@ func TestStager_Stage(t *testing.T) {
 	}
 
 	imageRelocator := mocks.NewMockImageRelocator(controller)
-	imageList, err := images.New([]string{"docker.io/library/image"})
+	imageList, err := images.New("docker.io/library/image")
 	require.NoError(t, err)
 	imageRelocator.EXPECT().
 		Relocate(gomock.Any(), "registry-prefix", imageList.Slice(), false).

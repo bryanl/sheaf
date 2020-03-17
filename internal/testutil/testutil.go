@@ -15,9 +15,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/bryanl/sheaf/pkg/images"
 	"github.com/bryanl/sheaf/pkg/mocks"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 // StageFile stages a file to a destination.
@@ -98,7 +98,7 @@ func GenerateBundle(t *testing.T, controller *gomock.Controller, options ...Bund
 
 	bundle.EXPECT().Manifests().Return(m, nil).AnyTimes()
 
-	imageList, err := images.New([]string{"image"})
+	imageList, err := images.New("image")
 	require.NoError(t, err)
 	bundle.EXPECT().Images().Return(imageList, nil).AnyTimes()
 
