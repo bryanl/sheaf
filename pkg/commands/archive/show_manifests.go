@@ -7,36 +7,27 @@
 package archive
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/archiver"
-	"github.com/bryanl/sheaf/pkg/fs"
+	"github.com/bryanl/sheaf/pkg/option"
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewShowManifests creates a "show manifests" command.
 func NewShowManifests() *cobra.Command {
-	var prefix string
-
 	cmd := &cobra.Command{
 		Use:   "show-manifests",
 		Short: "Prints manifest to standard out",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			p, _ := os.Getwd()
-			if len(args) > 0 {
-				p = args[0]
-			}
-
-			mg := fs.NewManifestShower(
-				p,
-				fs.ManifestShowerPrefix(prefix),
-				fs.ManifestShowerArchiver(archiver.Default))
-			return mg.Show(os.Stdout)
-		},
+		Args:  cobra.NoArgs,
 	}
 
-	cmd.Flags().StringVar(&prefix, "prefix", "", "registry prefix")
-
+	setupShowManifest(cmd)
 	return cmd
+}
+
+func setupShowManifest(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.ArchiveShowManifests, "archive-show-manifests")
+	g.WithBundlePath()
+	g.WithArchive()
+	g.WithPrefix()
 }

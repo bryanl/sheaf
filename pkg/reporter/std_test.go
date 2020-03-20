@@ -20,7 +20,7 @@ func Test_std_Header(t *testing.T) {
 
 	var b bytes.Buffer
 
-	r := newStd(stdOptionOutput(&b))
+	r := New(WithWriter(&b))
 	r.Header(header)
 
 	actual := b.String()
@@ -31,7 +31,7 @@ func Test_std_Header(t *testing.T) {
 func Test_std_Headerf(t *testing.T) {
 	var b bytes.Buffer
 
-	r := newStd(stdOptionOutput(&b))
+	r := New(WithWriter(&b))
 	r.Headerf("hello: %s", "world")
 
 	actual := b.String()
@@ -69,7 +69,7 @@ func Test_std_Report(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var b bytes.Buffer
 
-			r := newStd(stdOptionOutput(&b))
+			r := New(WithWriter(&b))
 			r.Report(tc.in)
 
 			actual := b.String()
@@ -114,7 +114,7 @@ func Test_std_Reportf(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var b bytes.Buffer
 
-			r := newStd(stdOptionOutput(&b))
+			r := New(WithWriter(&b))
 			r.Reportf(tc.in, tc.inArgs...)
 
 			actual := b.String()

@@ -12,6 +12,10 @@ import "io"
 
 // Archiver manages archives.
 type Archiver interface {
-	Unarchive(src, dest string) error
+	// Archive archives a source to a writer.
 	Archive(src string, w io.Writer) error
+	// Unarchive unarchives a reader to a destination.
+	Unarchive(r io.Reader, dest string) error
+	// UnarchivePath unarchives a source to a destination.
+	UnarchivePath(src string, dest string) error
 }

@@ -7,12 +7,10 @@
 package config
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/fs"
+	"github.com/bryanl/sheaf/pkg/option"
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewGetCommand creates `config get` command.
@@ -20,21 +18,15 @@ func NewGetCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "get",
 		Short: "Get bundle configuration",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			b, err := fs.DefaultBundleFactory(".")
-			if err != nil {
-				return err
-			}
-
-			data, err := json.MarshalIndent(b.Config(), "", "  ")
-			if err != nil {
-				return err
-			}
-
-			fmt.Print(string(data))
-			return nil
-		},
+		Args:  cobra.NoArgs,
 	}
 
+	setupGet(&cmd)
+
 	return &cmd
+}
+
+func setupGet(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.ConfigGet, "config-get")
+	g.WithBundlePath()
 }

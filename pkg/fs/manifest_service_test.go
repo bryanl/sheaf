@@ -62,7 +62,7 @@ func TestManifestService_Add_from_http_url(t *testing.T) {
 		m, err := NewManifestService(manifestDir, ManifestServiceReporter(reporter.Nop{}))
 		require.NoError(t, err)
 
-		err = m.Add(ts.URL + "/deploy.yaml")
+		err = m.Add(false, ts.URL+"/deploy.yaml")
 		require.NoError(t, err)
 
 		wantedPaths := []string{"deploy.yaml"}
@@ -81,7 +81,7 @@ func TestManifestService_Add_from_non_http_url(t *testing.T) {
 		m, err := NewManifestService(manifestDir, ManifestServiceReporter(reporter.Nop{}))
 		require.NoError(t, err)
 
-		err = m.Add("ws://example.com/deploy.yaml")
+		err = m.Add(false, "ws://example.com/deploy.yaml")
 		require.Error(t, err)
 	})
 }
@@ -132,7 +132,7 @@ func TestManifestService_Add_from_fs(t *testing.T) {
 				m, err := NewManifestService(manifestDir, ManifestServiceReporter(reporter.Nop{}))
 				require.NoError(t, err)
 
-				err = m.Add(tc.manifestURI)
+				err = m.Add(false, tc.manifestURI)
 				if tc.wantErr {
 					require.Error(t, err)
 					return

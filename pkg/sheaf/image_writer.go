@@ -7,29 +7,15 @@
 package sheaf
 
 import (
-	"fmt"
-
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
-// ImageWriter writes an image to a destination..
-type ImageWriter func(refStr string, image v1.Image, forceInsecure bool) error
+//go:generate mockgen -destination=../mocks/mock_image_writer.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ImageWriter
 
-// DefaultImageWriter is the the default image writer which writes an image
-// to a container registry.
-func DefaultImageWriter(refStr string, image v1.Image, forceInsecure bool) error {
-	var nameOptions []name.Option
-	if forceInsecure {
-		nameOptions = append(nameOptions, name.Insecure)
-	}
-
-	dstRef, err := name.ParseReference(refStr, nameOptions...)
-	if err != nil {
-		return fmt.Errorf("parse remote reference: %w", err)
-	}
-
-	return remote.Write(dstRef, image, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+// ImageWriter is an interface that wraps a Write method.
+type ImageWriter interface {
+	// Write writes an image to a reference location.
+	Write(ref string, image v1.Image) error
+	// WriteIndex writes an image index to a reference location.
+	WriteIndex(ref string, imageIndex v1.ImageIndex) error
 }

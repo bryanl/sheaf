@@ -7,8 +7,6 @@
 package sheaf
 
 import (
-	"io"
-
 	"github.com/pivotal/image-relocation/pkg/image"
 )
 
@@ -34,12 +32,7 @@ type ArtifactsService interface {
 	Image() ImageService
 }
 
-// Packer packs a fs and writes it to a writer.
-type Packer interface {
-	Pack(b Bundle, w io.Writer) error
-}
-
 // ImageRelocator relocates an images to another registry.
 type ImageRelocator interface {
-	Relocate(rootPath, prefix string, images []image.Name, forceInsecure bool) error
+	Relocate(rootPath, prefix string, images []image.Name, iw ImageWriter) error
 }

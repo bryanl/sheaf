@@ -20,18 +20,13 @@ import (
 	"github.com/pivotal/image-relocation/pkg/images"
 )
 
-// ContainerImages returns images from containers in manifest path
-func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage) (images.Set, error) {
-	data, err := ioutil.ReadFile(manifestPath)
-	if err != nil {
-		return images.Empty, fmt.Errorf("read file: %w", err)
-	}
-
+// ContainerImagesFromBytes returns container images referenced in manifest bytes.
+func ContainerImagesFromBytes(data []byte, userDefinedImages []sheaf.UserDefinedImage) (images.Set, error) {
 	set := images.Empty
 
 	docs, err := manifestDocuments(data)
 	if err != nil {
-		return images.Empty, fmt.Errorf("read documents from %s: %w", manifestPath, err)
+		return images.Empty, fmt.Errorf("read documents: %w", err)
 	}
 
 	for _, doc := range docs {
@@ -46,7 +41,7 @@ func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage
 		}
 		set = set.Union(bufImages)
 
-		for _, udi := range definedImages {
+		for _, udi := range userDefinedImages {
 			if !(doc["apiVersion"] == udi.APIVersion && doc["kind"] == udi.Kind) {
 				continue
 			}
@@ -88,6 +83,21 @@ func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage
 	}
 
 	return set, nil
+}
+
+// ContainerImages returns images from containers in manifest path
+func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage) (images.Set, error) {
+	data, err := ioutil.ReadFile(manifestPath)
+	if err != nil {
+		return images.Empty, fmt.Errorf("read file: %w", err)
+	}
+
+	imagesSet, err := ContainerImagesFromBytes(data, definedImages)
+	if err != nil {
+		return images.Empty, fmt.Errorf("find container images in %s: %w", manifestPath, err)
+	}
+
+	return imagesSet, nil
 }
 
 func filterEmpty(ss []string) []string {

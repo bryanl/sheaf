@@ -7,55 +7,23 @@
 package fs
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pivotal/go-ape/pkg/filecopy"
+	"github.com/pivotal/image-relocation/pkg/images"
 
 	"github.com/bryanl/sheaf/pkg/codec"
 	"github.com/bryanl/sheaf/pkg/manifest"
 	"github.com/bryanl/sheaf/pkg/reporter"
 	"github.com/bryanl/sheaf/pkg/sheaf"
-	"github.com/pivotal/image-relocation/pkg/images"
 )
 
-// DefaultBundleConfigWriter is the default bundle config writer.
-func DefaultBundleConfigWriter(bundle sheaf.Bundle, config sheaf.BundleConfig) error {
-	jbc, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	filename := filepath.Join(bundle.Path(), sheaf.BundleConfigFilename)
-
-	return ioutil.WriteFile(filename, jbc, 0644)
-}
-
-// DefaultBundleFactory is the default fs factory.
-func DefaultBundleFactory(uri string) (sheaf.Bundle, error) {
-	return NewBundle(uri)
-}
-
-// Option is a functional option for configuring Bundle.
-type Option func(b Bundle) Bundle
-
-// CodecOption sets the codec for the fs.
-func CodecOption(c sheaf.Codec) Option {
-	return func(b Bundle) Bundle {
-		b.codec = c
-		return b
-	}
-}
-
-// ManifestsDirOption sets the location to the fs's manifest.
-func ManifestsDirOption(p string) Option {
-	return func(b Bundle) Bundle {
-		b.manifestsDir = p
-		return b
-	}
-}
+// BundleOption is a functional option for configuring Bundle.
+type BundleOption func(b Bundle) Bundle
 
 // Bundle is a fs that lives on a filesystem.
 type Bundle struct {
@@ -70,10 +38,10 @@ var _ sheaf.Bundle = &Bundle{}
 
 // NewBundle creates an instance of Bundle. `rootPath` points to root directory
 // of the fs on the filesystem.
-func NewBundle(bundleDir string, options ...Option) (*Bundle, error) {
+func NewBundle(bundleDir string, options ...BundleOption) (*Bundle, error) {
 	rootPath, err := locateRootDir(bundleDir)
 	if err != nil {
-		return nil, fmt.Errorf("locate bundle root directory for %s", bundleDir)
+		return nil, fmt.Errorf("locate bundle root directory for %s: %w", bundleDir, err)
 	}
 
 	config, err := loadBundleConfig(rootPath)
@@ -118,37 +86,42 @@ func (b *Bundle) Config() sheaf.BundleConfig {
 }
 
 func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
-	bundleConfig := sheaf.BundleConfig{}
-
 	path, err := locateRootDir(path)
 	if err != nil {
-		return bundleConfig, err
+		return nil, err
 	}
 
 	// check if directory exists
 	fi, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return bundleConfig, fmt.Errorf("fs directory %q does not exist", path)
+			return nil, fmt.Errorf("fs directory %q does not exist", path)
 		}
 
-		return bundleConfig, err
+		return nil, err
 	}
 
 	if !fi.IsDir() {
-		return bundleConfig, fmt.Errorf("%q is not a directory", path)
+		return nil, fmt.Errorf("%q is not a directory", path)
 	}
 
 	bundleConfigFilename := filepath.Join(path, sheaf.BundleConfigFilename)
 
-	data, err := ioutil.ReadFile(bundleConfigFilename)
+	f, err := os.Open(bundleConfigFilename)
 	if err != nil {
-		return sheaf.BundleConfig{}, fmt.Errorf("read %q: %w", bundleConfigFilename, err)
+		return nil, err
 	}
 
-	var bc sheaf.BundleConfig
-	if err := json.Unmarshal(data, &bc); err != nil {
-		return sheaf.BundleConfig{}, err
+	defer func() {
+		if cErr := f.Close(); cErr != nil {
+			log.Printf("close bundle config: %v", err)
+		}
+	}()
+
+	bcc := BundleConfigCodec{}
+	bc, err := bcc.Decode(f)
+	if err != nil {
+		return nil, fmt.Errorf("decode bundle: %w", err)
 	}
 
 	return bc, nil
@@ -214,8 +187,8 @@ func (b *Bundle) Images() (images.Set, error) {
 
 	config := b.Config()
 	bundleImages := images.Empty
-	if config.Images != nil {
-		bundleImages = *config.Images
+	if imageSet := config.GetImages(); imageSet != nil {
+		bundleImages = *imageSet
 	}
 	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), b.reporter)
 
@@ -233,7 +206,7 @@ func (b *Bundle) Images() (images.Set, error) {
 
 	for _, bundleManifest := range bundleManifests {
 
-		list, err := manifest.ContainerImages(bundleManifest.ID, config.UserDefinedImages)
+		list, err := manifest.ContainerImages(bundleManifest.ID, config.GetUserDefinedImages())
 		if err != nil {
 			return images.Empty, fmt.Errorf("find container images for %s: %w", bundleManifest, err)
 		}
@@ -250,6 +223,35 @@ func (b *Bundle) Images() (images.Set, error) {
 	}
 
 	return seen, nil
+}
+
+// Copy copies the bundle to a new path and returns a new bundle.
+func (b *Bundle) Copy(dest string) (sheaf.Bundle, error) {
+	if err := filecopy.Copy(
+		filepath.Join(dest, sheaf.BundleConfigFilename),
+		filepath.Join(b.Path(), sheaf.BundleConfigFilename)); err != nil {
+		return nil, fmt.Errorf("copy bundle config to %s: %w", dest, err)
+	}
+
+	if err := filecopy.Copy(
+		filepath.Join(dest, "app", "manifests"),
+		filepath.Join(b.Path(), "app", "manifests")); err != nil {
+		return nil, fmt.Errorf("copy manifests to %s: %w", dest, err)
+	}
+
+	nb, err := NewBundle(dest,
+		func(x Bundle) Bundle {
+			x.reporter = b.reporter
+			x.codec = b.codec
+			return x
+		},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("create new bundle: %w", err)
+	}
+
+	return nb, nil
 }
 
 func printImageTree(source string, imageNames []string, r reporter.Reporter) {

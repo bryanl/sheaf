@@ -9,25 +9,25 @@ package config
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/remote"
+	"github.com/bryanl/sheaf/pkg/option"
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewPullCommand create a pull command.
 func NewPullCommand() *cobra.Command {
-	var forceInsecure bool
-
-	cmd := cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "pull",
 		Short: "pull sheaf bundle config from registry",
-		Args:  cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			ref := args[0]
-			dest := args[1]
-			return remote.Write(ref, dest, forceInsecure)
-		},
+		Args:  cobra.NoArgs,
 	}
 
-	cmd.Flags().BoolVar(&forceInsecure, "insecure-registry", false, "insecure registry")
+	setupPull(cmd)
+	return cmd
+}
 
-	return &cmd
+func setupPull(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.ConfigPull, "config-pull")
+	g.WithInsecureRegistry()
+	g.WithReference()
+	g.WithDestination()
 }

@@ -7,39 +7,29 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
+	"github.com/bryanl/sheaf/pkg/option"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewInitCommand generates an init command.
 func NewInitCommand() *cobra.Command {
-	var version string
-	var bundlePath string
-
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Initialize bundle directory",
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("requires requires name of new bundle")
-			}
-
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			initer := sheaf.NewIniter(
-				sheaf.IniterOptionName(args[0]),
-				sheaf.IniterOptionVersion(version),
-				sheaf.IniterOptionBundlePath(bundlePath))
-			return initer.Init()
-		},
+		Args:  cobra.NoArgs,
 	}
 
-	cmd.Flags().StringVar(&version, "version", "", "bundle version")
-	cmd.Flags().StringVar(&bundlePath, "bundle-path", "", "bundle path")
+	setupInit(cmd)
 
 	return cmd
+}
+
+func setupInit(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.Init, "init")
+	g.WithBundleName()
+	g.WithInitBundlePath()
+	g.WithBundleVersion()
+	g.WithBundleConfigFactory()
 }

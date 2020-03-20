@@ -9,7 +9,7 @@
 package fs
 
 import (
-	"encoding/json"
+	"bytes"
 	"path/filepath"
 	"testing"
 
@@ -34,8 +34,11 @@ func TestBundle_Path(t *testing.T) {
 func TestBundle_Config(t *testing.T) {
 	testutil.WithBundleDir(t, func(dir string) {
 		configRaw := testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
-		var wanted sheaf.BundleConfig
-		require.NoError(t, json.Unmarshal(configRaw, &wanted))
+		bcc := BundleConfigCodec{}
+		r := bytes.NewReader(configRaw)
+
+		wanted, err := bcc.Decode(r)
+		require.NoError(t, err)
 
 		bundle, err := NewBundle(dir)
 		require.NoError(t, err)
