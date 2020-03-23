@@ -7,50 +7,30 @@
 package archive
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/archive"
-	"github.com/bryanl/sheaf/pkg/fs"
+	"github.com/bryanl/sheaf/pkg/option"
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewStageCommand creates a stage command.
 func NewStageCommand() *cobra.Command {
-	var dryRun bool
-	var forceInsecure bool
-
 	cmd := &cobra.Command{
 		Use:   "relocate",
 		Short: "Relocate images in archive to new registry",
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 2 {
-				return fmt.Errorf("requires fs location and registry prefix")
-			}
-
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var bfOptions []fs.LayoutOptionFunc
-			if forceInsecure {
-				bfOptions = append(bfOptions, fs.DefaultLayoutFactoryInsecureSkipVerify())
-			}
-
-			bf := fs.DefaultLayoutFactory(bfOptions...)
-
-			relocator := fs.NewImageRelocator(
-				fs.ImageRelocatorDryRun(dryRun),
-				fs.ImageRelocatorLayoutFactory(bf))
-
-			stager := archive.NewStager(
-				archive.StagerOptionImageRelocator(relocator))
-
-			return stager.Stage(args[0], args[1], forceInsecure)
-		},
+		Args:  cobra.NoArgs,
 	}
 
-	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry run")
-	cmd.Flags().BoolVar(&forceInsecure, "insecure-registry", false, "insecure registry")
-
+	setupRelocate(cmd)
 	return cmd
+}
+
+func setupRelocate(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.ArchiveRelocate, "archive-relocate")
+	g.WithBundlePath()
+	g.WithArchive()
+	g.WithInsecureRegistry()
+	g.WithPrefix()
+	g.WithDryRun()
+
 }

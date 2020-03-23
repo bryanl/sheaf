@@ -5,11 +5,10 @@
 package mocks
 
 import (
-	reflect "reflect"
-
 	sheaf "github.com/bryanl/sheaf/pkg/sheaf"
 	gomock "github.com/golang/mock/gomock"
 	images "github.com/pivotal/image-relocation/pkg/images"
+	reflect "reflect"
 )
 
 // MockBundle is a mock of Bundle interface
@@ -75,6 +74,21 @@ func (m *MockBundle) Config() sheaf.BundleConfig {
 func (mr *MockBundleMockRecorder) Config() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Config", reflect.TypeOf((*MockBundle)(nil).Config))
+}
+
+// Copy mocks base method
+func (m *MockBundle) Copy(arg0 string) (sheaf.Bundle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Copy", arg0)
+	ret0, _ := ret[0].(sheaf.Bundle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Copy indicates an expected call of Copy
+func (mr *MockBundleMockRecorder) Copy(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockBundle)(nil).Copy), arg0)
 }
 
 // Images mocks base method

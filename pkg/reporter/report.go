@@ -8,7 +8,7 @@ package reporter
 
 var (
 	// Default is the default reporter.
-	Default = newStd()
+	Default = New()
 )
 
 // Reporter reports information to sheaf users.

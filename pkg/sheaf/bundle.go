@@ -31,12 +31,13 @@ type Bundle interface {
 	Artifacts() ArtifactsService
 	Manifests() (ManifestService, error)
 	Images() (images.Set, error)
+	Copy(dest string) (Bundle, error)
 }
 
 // ManifestService is a service for interacting with manifests.
 type ManifestService interface {
 	List() ([]BundleManifest, error)
-	Add(manifestURIs ...string) error
+	Add(overwrite bool, manifestURIs ...string) error
 }
 
 // BundleManifest describes a manifest in a fs.

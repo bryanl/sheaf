@@ -7,30 +7,13 @@
 package sheaf
 
 import (
-	"fmt"
-
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
-// ImageReader fetches an image given a reference.
-type ImageReader func(refStr string, forceInsecure bool) (v1.Image, error)
+//go:generate mockgen -destination=../mocks/mock_image_reader.go -package mocks github.com/bryanl/sheaf/pkg/sheaf ImageReader
 
-// DefaultImageReader fetches an image given a reference from a registry.
-func DefaultImageReader(refStr string, forceInsecure bool) (v1.Image, error) {
-	var nameOptions []name.Option
-	if forceInsecure {
-		nameOptions = append(nameOptions, name.Insecure)
-	}
-
-	ref, err := name.ParseReference(refStr, nameOptions...)
-	if err != nil {
-		return nil, fmt.Errorf("parse remote reference: %w", err)
-	}
-
-	return remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+// ImageReader is an interface that wraps reading an image from a registry.
+type ImageReader interface {
+	// Read fetches an image given a reference.
+	Read(refStr string) (v1.Image, error)
 }
-
-var _ ImageReader = DefaultImageReader

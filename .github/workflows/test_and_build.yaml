@@ -38,27 +38,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v1
       - name: Run tests
-        run: go test -v -covermode=count ./...
+        run: go test -v -covermode=count ./pkg/... ./internal/...
 
-  integration-integration:
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000/tcp
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        if: success()
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.14.x
-      - name: Checkout code
-        uses: actions/checkout@v1
-      - name: Run tests
-        env:
-          REGISTRY: localhost:${{ job.services.registry.ports['5000'] }}
-        run: go test -tags=integration -v ./... -count=1
+# NOTE: disabling integration while command line is being reworked
+#  integration-integration:
+#    services:
+#      registry:
+#        image: registry:2
+#        ports:
+#          - 5000/tcp
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Install Go
+#        if: success()
+#        uses: actions/setup-go@v1
+#        with:
+#          go-version: 1.14.x
+#      - name: Checkout code
+#        uses: actions/checkout@v1
+#      - name: Run tests
+#        env:
+#          REGISTRY: localhost:${{ job.services.registry.ports['5000'] }}
+#        run: go test -tags=integration -v ./... -count=1
 
   coverage:
     runs-on: ubuntu-latest
@@ -73,7 +74,7 @@ jobs:
       - name: Calc coverage
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          go test -v -covermode=count -coverprofile=coverage.out ./...
+          go test -v -covermode=count -coverprofile=coverage.out ./pkg/... ./internal/...
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@v1.0.0
         with:

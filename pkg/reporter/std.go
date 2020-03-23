@@ -17,24 +17,28 @@ const (
 	defaultIndent = "  "
 )
 
-type stdOption func(std) std
+// StdOption is a functional option for configuring Std.
+type StdOption func(Std) Std
 
-func stdOptionOutput(w io.Writer) stdOption {
-	return func(std std) std {
+// WithWriter sets the writer.
+func WithWriter(w io.Writer) StdOption {
+	return func(std Std) Std {
 		std.w = w
 		return std
 	}
 }
 
-type std struct {
+// Std is the standard reporter.
+type Std struct {
 	w      io.Writer
 	indent string
 }
 
-var _ Reporter = &std{}
+var _ Reporter = &Std{}
 
-func newStd(options ...stdOption) *std {
-	r := std{
+// New creates an instance of Std.
+func New(options ...StdOption) *Std {
+	r := Std{
 		w:      os.Stdout,
 		indent: defaultIndent,
 	}
@@ -46,15 +50,18 @@ func newStd(options ...stdOption) *std {
 	return &r
 }
 
-func (r std) Header(text string) {
+// Header prints a header.
+func (r Std) Header(text string) {
 	fmt.Fprintln(r.w, text)
 }
 
-func (r std) Headerf(format string, a ...interface{}) {
+// Headerf prints a formatted header.
+func (r Std) Headerf(format string, a ...interface{}) {
 	r.Header(fmt.Sprintf(format, a...))
 }
 
-func (r std) Report(text string) {
+// Report prints a report. Reports are indented.
+func (r Std) Report(text string) {
 	if text[len(text)-1:] == "\n" {
 		result := ""
 		for _, s := range strings.Split(text[:len(text)-1], "\n") {
@@ -70,6 +77,7 @@ func (r std) Report(text string) {
 	fmt.Fprintln(r.w)
 }
 
-func (r std) Reportf(format string, a ...interface{}) {
+// Reportf prints a formatted report. Reports are indented.
+func (r Std) Reportf(format string, a ...interface{}) {
 	r.Report(fmt.Sprintf(format, a...))
 }

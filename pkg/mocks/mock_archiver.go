@@ -48,7 +48,7 @@ func (mr *MockArchiverMockRecorder) Archive(arg0, arg1 interface{}) *gomock.Call
 }
 
 // Unarchive mocks base method
-func (m *MockArchiver) Unarchive(arg0, arg1 string) error {
+func (m *MockArchiver) Unarchive(arg0 io.Reader, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Unarchive", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -59,4 +59,18 @@ func (m *MockArchiver) Unarchive(arg0, arg1 string) error {
 func (mr *MockArchiverMockRecorder) Unarchive(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unarchive", reflect.TypeOf((*MockArchiver)(nil).Unarchive), arg0, arg1)
+}
+
+// UnarchivePath mocks base method
+func (m *MockArchiver) UnarchivePath(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnarchivePath", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnarchivePath indicates an expected call of UnarchivePath
+func (mr *MockArchiverMockRecorder) UnarchivePath(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnarchivePath", reflect.TypeOf((*MockArchiver)(nil).UnarchivePath), arg0, arg1)
 }

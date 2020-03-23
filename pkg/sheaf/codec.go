@@ -7,6 +7,8 @@
 package sheaf
 
 //go:generate mockgen -destination=../mocks/mock_decoder.go -package mocks github.com/bryanl/sheaf/pkg/sheaf Decoder
+//go:generate mockgen -destination=../mocks/mock_encoder.go -package mocks github.com/bryanl/sheaf/pkg/sheaf Encoder
+//go:generate mockgen -destination=../mocks/mock_codec.go -package mocks github.com/bryanl/sheaf/pkg/sheaf Codec
 
 // Decoder decodes bytes into a value.
 type Decoder interface {

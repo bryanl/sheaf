@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "v1alpha1",
+  "name": "test",
+  "version": "0.1.0",
+  "images": [
+    "docker.io/library/foo"
+  ],
+  "userDefinedImages": [
+    {
+      "apiVersion": "v1",
+      "kind": "Item",
+      "jsonPath": "{.}",
+      "type": "single"
+    }
+  ]
+}

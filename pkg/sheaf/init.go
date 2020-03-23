@@ -7,97 +7,31 @@
 package sheaf
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
 )
 
-// IniterOption is an option for configuring Initer.
-type IniterOption func(i Initer) Initer
+// Init creates a bundle.
+func Init(optionList ...Option) error {
+	opts := makeDefaultOptions(optionList...)
 
-// IniterOptionBundlePath configures the fs path for Initer.
-func IniterOptionBundlePath(p string) IniterOption {
-	return func(i Initer) Initer {
-		i.BundlePath = p
-		return i
-	}
-}
-
-// IniterOptionName configure the name for Initer.
-func IniterOptionName(name string) IniterOption {
-	return func(i Initer) Initer {
-		i.Name = name
-		return i
-	}
-}
-
-// IniterOptionVersion configure the version for Initer.
-func IniterOptionVersion(name string) IniterOption {
-	return func(i Initer) Initer {
-		i.Version = name
-		return i
-	}
-}
-
-// Initer initializes a fs.
-type Initer struct {
-	BundlePath string
-	Name       string
-	Version    string
-}
-
-// NewIniter creates an instance of Initer.
-func NewIniter(options ...IniterOption) *Initer {
-	i := Initer{}
-
-	for _, option := range options {
-		i = option(i)
+	if opts.bundleName == "" {
+		return fmt.Errorf("bundle name is blank")
 	}
 
-	return &i
-}
-
-// Init initializes a fs.
-func (i *Initer) Init() error {
-	if i.Name == "" {
-		return fmt.Errorf("name is blank")
+	if opts.bundleConfigFactory == nil {
+		return fmt.Errorf("bundle config factory is not defined")
 	}
 
-	bc := NewBundleConfig(i.Name, i.Version)
-
-	bundlePath := i.BundlePath
-	if bundlePath == "" {
-		bundlePath = i.Name
+	if opts.createBundle == nil {
+		return fmt.Errorf("init does not know how to create bundles")
 	}
 
-	if err := os.MkdirAll(bundlePath, 0700); err != nil {
-		return err
-	}
+	bc := opts.bundleConfigFactory()
+	bc.SetVersion(opts.bundleVersion)
+	bc.SetName(opts.bundleName)
 
-	bundleConfigPath := filepath.Join(bundlePath, BundleConfigFilename)
-	f, err := os.Create(bundleConfigPath)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if cErr := f.Close(); cErr != nil {
-			log.Printf("close fs config: %v", err)
-		}
-	}()
-
-	e := json.NewEncoder(f)
-	e.SetIndent("", "  ")
-
-	if err := e.Encode(&bc); err != nil {
-		return err
-	}
-
-	manifestsPath := filepath.Join(bundlePath, "app", "manifests")
-	if err := os.MkdirAll(manifestsPath, 0700); err != nil {
-		return err
+	if err := opts.createBundle(bc); err != nil {
+		return fmt.Errorf("create bundle: %w", err)
 	}
 
 	return nil

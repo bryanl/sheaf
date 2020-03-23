@@ -7,47 +7,48 @@
 package archiver
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"os"
 
+	"github.com/bryanl/sheaf/internal/goutil"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
-var (
-	// Default is the default archiver. It assumes the archive is tar.gz.
-	Default = NewArchiver()
-)
-
-// Archiver manages tar.gz archives.
+// Archiver is a targz archiver.
 type Archiver struct{}
 
 var _ sheaf.Archiver = &Archiver{}
 
-// NewArchiver creates an instance of Archiver.
-func NewArchiver() *Archiver {
+// New creates an instance of Archiver.
+func New() *Archiver {
 	a := Archiver{}
 
 	return &a
 }
 
-// Archive creates a gzipped tarball.
+// Unarchive unarchives a reader to a directory
+func (a Archiver) Unarchive(r io.Reader, dest string) error {
+	return untargz(r, dest)
+}
+
+// Archive archives a directory to a writer.
 func (a Archiver) Archive(src string, w io.Writer) error {
 	return targz(src, w)
 }
 
-// Unarchive unarchives a tar.gz file from src to dest.
-func (a Archiver) Unarchive(src, dest string) error {
+// UnarchivePath unarchives a targz file to a directory.
+func (a Archiver) UnarchivePath(src string, dest string) error {
 	f, err := os.Open(src)
 	if err != nil {
+		return fmt.Errorf("unable to open archive %q: %q", src, err)
+	}
+
+	defer goutil.Close(f)
+
+	if err := a.Unarchive(f, dest); err != nil {
 		return err
 	}
 
-	defer func() {
-		if cErr := f.Close(); cErr != nil {
-			log.Printf("close archive: %v", cErr)
-		}
-	}()
-
-	return untargz(f, dest)
+	return nil
 }

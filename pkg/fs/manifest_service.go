@@ -95,7 +95,7 @@ func (m ManifestService) List() ([]sheaf.BundleManifest, error) {
 }
 
 // Add adds zero or more manifests to the filesystem.
-func (m ManifestService) Add(manifestURIs ...string) error {
+func (m ManifestService) Add(overwrite bool, manifestURIs ...string) error {
 	if err := os.MkdirAll(m.manifestsDir, 0700); err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (m ManifestService) Add(manifestURIs ...string) error {
 		}
 
 		if validURL {
-			if err := m.addURL(*u); err != nil {
+			if err := m.addURL(*u, overwrite); err != nil {
 				return err
 			}
 
@@ -127,13 +127,13 @@ func (m ManifestService) Add(manifestURIs ...string) error {
 		}
 
 		if fi.IsDir() {
-			if err := m.addDir(manifestURI); err != nil {
+			if err := m.addDir(manifestURI, overwrite); err != nil {
 				return err
 			}
 			continue
 		}
 
-		if err := m.addFile(manifestURI); err != nil {
+		if err := m.addFile(manifestURI, overwrite); err != nil {
 			return err
 		}
 	}
@@ -141,7 +141,7 @@ func (m ManifestService) Add(manifestURIs ...string) error {
 	return nil
 }
 
-func (m ManifestService) addURL(manifestURL url.URL) error {
+func (m ManifestService) addURL(manifestURL url.URL, overwrite bool) error {
 	if !strings.HasPrefix(manifestURL.Scheme, "http") {
 		return fmt.Errorf("%s is an unsupported URL", manifestURL.String())
 	}
@@ -187,25 +187,27 @@ func (m ManifestService) addURL(manifestURL url.URL) error {
 		return err
 	}
 
-	return m.addFile(dest)
+	return m.addFile(dest, overwrite)
 
 }
 
-func (m ManifestService) addFile(manifestURI string) error {
+func (m ManifestService) addFile(manifestURI string, overwrite bool) error {
 	_, file := filepath.Split(manifestURI)
 
 	dest := filepath.Join(m.manifestsDir, file)
-	if _, err := os.Stat(dest); err != nil {
-		if os.IsNotExist(err) {
-			return fs.CopyFile(dest, manifestURI)
+	_, err := os.Stat(dest)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("destination is invalid: %w", err)
 		}
-		return fmt.Errorf("destination is invalid: %w", err)
+	} else if !overwrite {
+		return fmt.Errorf("%s exists", dest)
 	}
 
-	return fmt.Errorf("%s exists", dest)
+	return fs.CopyFile(dest, manifestURI)
 }
 
-func (m ManifestService) addDir(manifestDir string) error {
+func (m ManifestService) addDir(manifestDir string, overwrite bool) error {
 	fis, err := ioutil.ReadDir(manifestDir)
 	if err != nil {
 		return err
@@ -217,7 +219,7 @@ func (m ManifestService) addDir(manifestDir string) error {
 		}
 
 		manifestPath := filepath.Join(manifestDir, fi.Name())
-		if err := m.addFile(manifestPath); err != nil {
+		if err := m.addFile(manifestPath, overwrite); err != nil {
 			return err
 		}
 	}

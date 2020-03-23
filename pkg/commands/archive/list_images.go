@@ -7,15 +7,9 @@
 package archive
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/archiver"
-	"github.com/bryanl/sheaf/pkg/fs"
+	"github.com/bryanl/sheaf/pkg/option"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -24,39 +18,15 @@ func NewListImages() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-images",
 		Short: "Lists images given an archive path",
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("requires archive path")
-			}
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			dir, err := ioutil.TempDir("", "sheaf")
-			if err != nil {
-				return err
-			}
-
-			defer func() {
-				if rErr := os.RemoveAll(dir); rErr != nil {
-					log.Printf("remove temporary directory: %v", err)
-				}
-			}()
-
-			if err := archiver.Default.Unarchive(args[0], dir); err != nil {
-				return err
-			}
-
-			b, err := fs.NewBundle(dir)
-			if err != nil {
-				return err
-			}
-
-			config := sheaf.ArchiveListImagesConfig{
-				Bundle: b,
-			}
-			return sheaf.ArchiveListImages(config)
-		},
+		Args:  cobra.NoArgs,
 	}
 
+	setupListImages(cmd)
 	return cmd
+}
+
+func setupListImages(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.ArchiveListImages, "archive-list-images")
+	g.WithArchive()
+	g.WithBundlePath()
 }

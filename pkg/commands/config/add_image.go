@@ -9,31 +9,23 @@ package config
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/bryanl/sheaf/pkg/fs"
+	"github.com/bryanl/sheaf/pkg/option"
+	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
 // NewAddImageCommand creates an add image command.
 func NewAddImageCommand() *cobra.Command {
-	var images []string
-	var bundlePath string
-
 	cmd := &cobra.Command{
 		Use:   "add-image",
 		Short: "Add image to bundle",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			ia, err := fs.NewImageAdder(bundlePath)
-			if err != nil {
-				return err
-			}
-			return ia.Add(images...)
-		},
 	}
 
-	cmd.Flags().StringSliceVarP(&images, "image", "i", nil,
-		"image to add (can specify multiple times)")
-
-	cmd.Flags().StringVar(&bundlePath, "bundle-path", ".", "bundle path")
-
+	setupAddImage(cmd)
 	return cmd
+}
+
+func setupAddImage(cmd *cobra.Command) {
+	g := option.NewGenerator(cmd, sheaf.ConfigAddImage, "config-add-image")
+	g.WithBundlePath()
+	g.WithImages()
 }

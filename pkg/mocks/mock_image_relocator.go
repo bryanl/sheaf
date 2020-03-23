@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	sheaf "github.com/bryanl/sheaf/pkg/sheaf"
 	gomock "github.com/golang/mock/gomock"
 	image "github.com/pivotal/image-relocation/pkg/image"
 	reflect "reflect"
@@ -34,7 +35,7 @@ func (m *MockImageRelocator) EXPECT() *MockImageRelocatorMockRecorder {
 }
 
 // Relocate mocks base method
-func (m *MockImageRelocator) Relocate(arg0, arg1 string, arg2 []image.Name, arg3 bool) error {
+func (m *MockImageRelocator) Relocate(arg0, arg1 string, arg2 []image.Name, arg3 sheaf.ImageWriter) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Relocate", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
