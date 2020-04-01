@@ -47,7 +47,6 @@ func TestBundleConfigWriter_Write(t *testing.T) {
 						APIVersion: "v1",
 						Kind:       "Item",
 						JSONPath:   "{.}",
-						Type:       sheaf.SingleResult,
 					},
 				})
 
@@ -68,7 +67,6 @@ func TestBundleConfigWriter_Write(t *testing.T) {
 						APIVersion: "v1",
 						Kind:       "Item",
 						JSONPath:   "{.}",
-						Type:       sheaf.SingleResult,
 					},
 				})
 

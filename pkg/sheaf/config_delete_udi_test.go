@@ -36,7 +36,6 @@ func TestConfigDeleteUDI(t *testing.T) {
 		APIVersion: "v1",
 		Kind:       "Kind1",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 
 	cases := []struct {

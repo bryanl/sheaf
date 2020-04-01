@@ -6,8 +6,7 @@
     {
       "apiVersion": "v1",
       "kind": "Item",
-      "jsonPath": "{.}",
-      "type": "single"
+      "jsonPath": "{.}"
     }
   ]
 }

@@ -13,7 +13,7 @@ spec:
         app: hello
     spec:
       containers:
-        - name: hello
-          image: example.com/registry/bryanl-slim-hello-world-9c0d0df9139fe2054cb51ac7161ece24:v1
-          ports:
-            - containerPort: 8080
+      - name: hello
+        image: example.com/registry/bryanl-slim-hello-world-9c0d0df9139fe2054cb51ac7161ece24:v1
+        ports:
+        - containerPort: 8080

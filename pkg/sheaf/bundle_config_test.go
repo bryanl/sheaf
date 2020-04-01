@@ -26,7 +26,6 @@ func TestUserDefinedImage_Validate(t *testing.T) {
 				APIVersion: "api-version",
 				Kind:       "kind",
 				JSONPath:   "{.}",
-				Type:       SingleResult,
 			},
 		},
 		{
@@ -34,7 +33,6 @@ func TestUserDefinedImage_Validate(t *testing.T) {
 			in: UserDefinedImage{
 				Kind:     "kind",
 				JSONPath: "{.}",
-				Type:     SingleResult,
 			},
 			wantErr: true,
 		},
@@ -43,7 +41,6 @@ func TestUserDefinedImage_Validate(t *testing.T) {
 			in: UserDefinedImage{
 				APIVersion: "api-version",
 				JSONPath:   "{.}",
-				Type:       SingleResult,
 			},
 			wantErr: true,
 		},
@@ -52,7 +49,6 @@ func TestUserDefinedImage_Validate(t *testing.T) {
 			in: UserDefinedImage{
 				APIVersion: "api-version",
 				Kind:       "kind",
-				Type:       SingleResult,
 			},
 			wantErr: true,
 		},
@@ -62,26 +58,6 @@ func TestUserDefinedImage_Validate(t *testing.T) {
 				APIVersion: "api-version",
 				Kind:       "kind",
 				JSONPath:   "{.",
-				Type:       SingleResult,
-			},
-			wantErr: true,
-		},
-		{
-			name: "type is blank",
-			in: UserDefinedImage{
-				APIVersion: "api-version",
-				Kind:       "kind",
-				JSONPath:   "{.}",
-			},
-			wantErr: true,
-		},
-		{
-			name: "type is invalid",
-			in: UserDefinedImage{
-				APIVersion: "api-version",
-				Kind:       "kind",
-				JSONPath:   "{.}",
-				Type:       UserDefinedImageType("invalid"),
 			},
 			wantErr: true,
 		},

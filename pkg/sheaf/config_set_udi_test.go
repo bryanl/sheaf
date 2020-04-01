@@ -31,19 +31,16 @@ func TestConfigSetUDI(t *testing.T) {
 		APIVersion: "v1",
 		Kind:       "Kind1",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 	udi2 := sheaf.UserDefinedImage{
 		APIVersion: "v2",
 		Kind:       "Kind1",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 	udi3 := sheaf.UserDefinedImage{
 		APIVersion: "v1",
 		Kind:       "Kind2",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 
 	cases := []struct {
