@@ -35,7 +35,7 @@ func Test_sheaf_archive_pack(t *testing.T) {
 		require.NoError(t, err)
 
 		listOutput, err := b.harness.runSheaf(options.dir, "archive", "list-images",
-			"integration-0.1.0.tgz")
+			"--archive", "integration-0.1.0.tgz")
 		require.NoError(t, err)
 
 		var list []sheaf.BundleImage
@@ -60,7 +60,7 @@ func Test_sheaf_archive_push(t *testing.T) {
 
 		archivePath := filepath.Join(options.dir, b.archiveName())
 		ref := genRegistryPath(options)
-		pushArgs := []string{"archive", "push", archivePath, ref, "--insecure-registry"}
+		pushArgs := []string{"archive", "push", "--archive", archivePath, "--ref", ref, "--insecure-registry"}
 		_, err = b.harness.runSheaf(b.dir, pushArgs...)
 		require.NoError(t, err)
 
@@ -73,7 +73,7 @@ func Test_sheaf_archive_push(t *testing.T) {
 
 		dest := filepath.Join(dir, "dest")
 
-		pullArgs := []string{"config", "pull", ref, dest, "--insecure-registry"}
+		pullArgs := []string{"config", "pull", "--ref", ref, "--dest", dest, "--insecure-registry"}
 		_, err = b.harness.runSheaf(b.dir, pullArgs...)
 		require.NoError(t, err)
 
@@ -96,7 +96,7 @@ func Test_sheaf_archive_relocate(t *testing.T) {
 		archivePath := filepath.Join(options.dir, b.archiveName())
 		ref := genRegistryRoot(options)
 		_, err = b.harness.runSheaf(options.dir, "archive", "relocate",
-			archivePath, ref, "--insecure-registry")
+			"--archive", archivePath, "--prefix", ref, "--insecure-registry")
 		require.NoError(t, err)
 
 		originalName, err := image.NewName("docker.io/bryanl/slim-hello-world")
@@ -169,7 +169,7 @@ func Test_sheaf_archive_show_manifests(t *testing.T) {
 				require.NoError(t, err)
 
 				archivePath := filepath.Join(options.dir, b.archiveName())
-				args := append([]string{"archive", "show-manifests", archivePath}, tc.args...)
+				args := append([]string{"archive", "show-manifests", "--archive", archivePath}, tc.args...)
 
 				output, err := b.harness.runSheaf(b.dir, args...)
 				require.NoError(t, err)

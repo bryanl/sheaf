@@ -23,7 +23,7 @@ import (
 )
 
 func sheafInit(t *testing.T, h *harness, name, wd string) *bundle {
-	_, err := h.runSheaf(wd, "init", name)
+	_, err := h.runSheaf(wd, "init", "--bundle-name", name)
 	require.NoError(t, err, "initialize sheaf bundle")
 
 	return newBundle(t, filepath.Join(wd, name), h)
@@ -46,28 +46,27 @@ func newBundle(t *testing.T, dir string, h *harness) *bundle {
 }
 
 func (b bundle) readConfig() sheaf.BundleConfig {
-	var config sheaf.BundleConfig
-	readJSONFile(b.t, b.configFile(), &config)
+	config, err := fs.LoadBundleConfig(b.dir)
+	require.NoError(b.t, err)
+
 	return config
 }
 
 func (b bundle) updateConfig(fn func(config sheaf.BundleConfig)) {
+	config := b.readConfig()
+
+	fn(config)
+
 	bcc := fs.BundleConfigCodec{}
 
-	r := bytes.NewReader(readFile(b.t, b.configFile()))
-	bc, err := bcc.Decode(r)
-	require.NoError(b.t, err)
-
-	fn(bc)
-
-	f, err := os.Open(b.configFile())
+	f, err := os.OpenFile(b.configFile(), os.O_WRONLY, 0600)
 	require.NoError(b.t, err)
 
 	defer func() {
 		require.NoError(b.t, f.Close())
 	}()
 
-	require.NoError(b.t, bcc.Encode(f, bc))
+	require.NoError(b.t, bcc.Encode(f, config))
 }
 
 func (b bundle) configFile() string {
