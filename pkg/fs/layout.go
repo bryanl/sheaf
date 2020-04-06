@@ -47,9 +47,17 @@ func DefaultLayoutFactory(options ...LayoutOptionFunc) LayoutFactory {
 	}
 
 	return func(root string) (layout Layout, err error) {
-		t, err := transport.NewHttpTransport(lo.certs, lo.insecureSkipVerify)
-		if err != nil {
-			return nil, fmt.Errorf("create http transport: %w", err)
+		var t http.RoundTripper
+
+		if lo.insecureSkipVerify {
+			t = newInsecureTransport()
+		} else {
+			nt, err := transport.NewHttpTransport(lo.certs, lo.insecureSkipVerify)
+			if err != nil {
+				return nil, fmt.Errorf("create http transport: %w", err)
+			}
+
+			t = nt
 		}
 
 		layoutPath := filepath.Join(root, "artifacts", "layout")
@@ -60,7 +68,7 @@ func DefaultLayoutFactory(options ...LayoutOptionFunc) LayoutFactory {
 			}
 			return nil, fmt.Errorf("layout path: %w", err)
 		}
-		return ggcr.NewRegistryClient(ggcr.WithTransport(http.DefaultTransport)).
+		return ggcr.NewRegistryClient(ggcr.WithTransport(t)).
 			ReadLayout(layoutPath)
 	}
 }
@@ -68,4 +76,21 @@ func DefaultLayoutFactory(options ...LayoutOptionFunc) LayoutFactory {
 // Layout manages OCI layouts.
 type Layout interface {
 	registry.Layout
+}
+
+type insecureTransport struct {
+	roundTripperFunc func(*http.Request) (*http.Response, error)
+}
+
+var _ http.RoundTripper = &insecureTransport{}
+
+func newInsecureTransport() *insecureTransport {
+	return &insecureTransport{
+		roundTripperFunc: http.DefaultTransport.RoundTrip,
+	}
+}
+
+func (i insecureTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.URL.Scheme = "http"
+	return i.roundTripperFunc(r)
 }

@@ -81,7 +81,7 @@ func newSheafInitRunner(t *testing.T, h *harness, name, wd, bundleName string, o
 
 func (r *sheafInitRunner) Run(args ...string) {
 	r.t.Run(r.name, func(t *testing.T) {
-		args = append([]string{"init", r.bundleName}, args...)
+		args = append([]string{"init", "--bundle-name", r.bundleName}, args...)
 
 		root := filepath.Join(r.workingDirectory, r.bundleName)
 		if r.bundlePath != "" {

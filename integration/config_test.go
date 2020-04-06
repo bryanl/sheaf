@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -275,8 +276,9 @@ func Test_sheaf_config_get(t *testing.T) {
 
 		wanted := readFile(t, b.configFile())
 		wanted = bytes.TrimSpace(wanted)
+		actual := strings.TrimSpace(output.Stdout.String())
 
-		require.Equal(t, string(wanted), output.Stdout.String())
+		require.Equal(t, string(wanted), actual)
 	})
 }
 
@@ -291,7 +293,7 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 
 		ref := genRegistryPath(options)
 
-		pushArgs := []string{"config", "push", b.dir, ref, "--insecure-registry"}
+		pushArgs := []string{"config", "push", "--bundle-path", b.dir, "--ref", ref, "--insecure-registry"}
 		_, err = b.harness.runSheaf(b.dir, pushArgs...)
 		require.NoError(t, err)
 
@@ -304,7 +306,7 @@ func Test_sheaf_config_push_and_pull(t *testing.T) {
 
 		dest := filepath.Join(dir, "dest")
 
-		pullArgs := []string{"config", "pull", ref, dest, "--insecure-registry"}
+		pullArgs := []string{"config", "pull", "--ref", ref, "--dest", dest, "--insecure-registry"}
 		_, err = b.harness.runSheaf(b.dir, pullArgs...)
 		require.NoError(t, err)
 

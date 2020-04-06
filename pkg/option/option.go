@@ -259,11 +259,20 @@ func (g Generator) WithInsecureRegistry() {
 
 		dryRun := viper.GetBool(g.flagName("dry-run"))
 
+		var layoutFactoryOptions []fs.LayoutOptionFunc
+		if forceInsecure {
+			layoutFactoryOptions = append(layoutFactoryOptions,
+				fs.DefaultLayoutFactoryInsecureSkipVerify())
+		}
+
 		return []sheaf.Option{
 			sheaf.WithImageReader(ir),
 			sheaf.WithImageWriter(iw),
 			sheaf.WithImageRelocator(
-				fs.NewImageRelocator(fs.ImageRelocatorDryRun(dryRun))),
+				fs.NewImageRelocator(
+					fs.ImageRelocatorLayoutFactory(fs.DefaultLayoutFactory(
+						layoutFactoryOptions...)),
+					fs.ImageRelocatorDryRun(dryRun))),
 		}
 	})
 }

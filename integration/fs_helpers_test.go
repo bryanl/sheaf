@@ -7,7 +7,6 @@
 package integration_test
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -99,12 +98,6 @@ func readFile(t *testing.T, file string) []byte {
 	require.NoError(t, err)
 
 	return data
-}
-
-func readJSONFile(t *testing.T, file string, v interface{}) {
-	data := readFile(t, file)
-	err := json.Unmarshal(data, v)
-	require.NoError(t, err)
 }
 
 func testdata(t *testing.T, parts ...string) string {

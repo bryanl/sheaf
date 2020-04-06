@@ -40,26 +40,25 @@ jobs:
       - name: Run tests
         run: go test -v -covermode=count ./pkg/... ./internal/...
 
-# NOTE: disabling integration while command line is being reworked
-#  integration-integration:
-#    services:
-#      registry:
-#        image: registry:2
-#        ports:
-#          - 5000/tcp
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Install Go
-#        if: success()
-#        uses: actions/setup-go@v1
-#        with:
-#          go-version: 1.14.x
-#      - name: Checkout code
-#        uses: actions/checkout@v1
-#      - name: Run tests
-#        env:
-#          REGISTRY: localhost:${{ job.services.registry.ports['5000'] }}
-#        run: go test -tags=integration -v ./... -count=1
+  integration-integration:
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000/tcp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        if: success()
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14.x
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Run tests
+        env:
+          REGISTRY: localhost:${{ job.services.registry.ports['5000'] }}
+        run: go test -tags=integration -v ./... -count=1
 
   coverage:
     runs-on: ubuntu-latest

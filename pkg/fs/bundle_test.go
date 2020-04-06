@@ -47,3 +47,15 @@ func TestBundle_Config(t *testing.T) {
 		require.Equal(t, wanted, actual)
 	})
 }
+
+func TestLoadBundleConfig(t *testing.T) {
+	testutil.WithBundleDir(t, func(dir string) {
+		testutil.StageFile(t, sheaf.BundleConfigFilename, filepath.Join(dir, sheaf.BundleConfigFilename))
+
+		c, err := LoadBundleConfig(dir)
+		require.NoError(t, err)
+
+		require.Equal(t, "knative-serving-0.12", c.GetName())
+	})
+
+}

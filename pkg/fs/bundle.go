@@ -44,7 +44,7 @@ func NewBundle(bundleDir string, options ...BundleOption) (*Bundle, error) {
 		return nil, fmt.Errorf("locate bundle root directory for %s: %w", bundleDir, err)
 	}
 
-	config, err := loadBundleConfig(rootPath)
+	config, err := LoadBundleConfig(rootPath)
 	if err != nil {
 		return nil, fmt.Errorf("load bundle config: %w", err)
 	}
@@ -85,7 +85,8 @@ func (b *Bundle) Config() sheaf.BundleConfig {
 	return b.config
 }
 
-func loadBundleConfig(path string) (sheaf.BundleConfig, error) {
+// LoadBundleConfig loads a bundle config from a path on the filesystem.
+func LoadBundleConfig(path string) (sheaf.BundleConfig, error) {
 	path, err := locateRootDir(path)
 	if err != nil {
 		return nil, err
