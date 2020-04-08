@@ -11,7 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"k8s.io/apimachinery/pkg/util/yaml"
+	"github.com/bryanl/sheaf/third_party/github.com/kubernetes/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/yaml"
 )
 
 // Split separates a stream of YAML documents into a slice of single documents.

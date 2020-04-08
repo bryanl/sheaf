@@ -7,6 +7,9 @@
 package yamlutil_test
 
 import (
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/bryanl/sheaf/internal/yamlutil"
@@ -106,6 +109,54 @@ a: b`
 			}
 
 			require.Equal(t, tc.expected, a)
+		})
+	}
+}
+
+func TestSlicerWithLargeFile(t *testing.T) {
+	expectedFiles := []string{}
+	for i := 0; i <= 51; i++ {
+		expectedFiles = append(expectedFiles, fmt.Sprintf("file_%d.yaml", i))
+	}
+	cases := []struct {
+		name          string
+		inputFile     string
+		expectedFiles []string
+		expectedErr   string
+	}{
+		{
+			name:          "large file",
+			inputFile:     "cert-manager.yaml",
+			expectedFiles: expectedFiles,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			contents, err := ioutil.ReadFile(filepath.Join("./testdata", tc.inputFile))
+			require.NoError(t, err)
+
+			actual, err := yamlutil.Split(contents)
+			if tc.expectedErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.EqualError(t, err, tc.expectedErr)
+				return
+			}
+
+			a := []string{}
+			for _, d := range actual {
+				a = append(a, string(d))
+			}
+
+			e := []string{}
+			for _, f := range tc.expectedFiles {
+				d, err := ioutil.ReadFile(filepath.Join("./testdata", f))
+				require.NoError(t, err)
+				e = append(e, string(d))
+			}
+
+			require.Equal(t, e, a)
 		})
 	}
 }

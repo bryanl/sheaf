@@ -34,4 +34,6 @@ require (
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 	k8s.io/apimachinery v0.17.3-beta.0
 	k8s.io/client-go v0.0.0-20200131194156-19522ff28802
+	k8s.io/klog v1.0.0
+	sigs.k8s.io/yaml v1.1.0
 )
