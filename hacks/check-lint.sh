@@ -2,6 +2,6 @@
 #
 # run golangci-lint
 
-golangci-lint -E bodyclose,misspell,gocyclo,dupl,gofmt,golint,unconvert,goimports,depguard,gocritic,interfacer run
+golangci-lint -E misspell,gocyclo,dupl,gofmt,golint,unconvert,goimports,depguard,gocritic,interfacer run --disable-all
 
 # consider adding funlen
