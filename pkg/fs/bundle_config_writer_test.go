@@ -159,7 +159,7 @@ func TestBundleConfigWriter_Write(t *testing.T) {
 			require.NoError(t, err)
 
 			got := testutil.SlurpData(t, filepath.Join(dir, "bundle.json"))
-			require.Equal(t, string(tc.expected), string(got))
+			require.Equal(t, string(testutil.NormalizeNewlines(tc.expected)), string(got))
 		})
 	}
 }
