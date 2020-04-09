@@ -34,6 +34,10 @@ func TestManifestService_List(t *testing.T) {
 		actual, err := m.List()
 		require.NoError(t, err)
 
+		for i, a := range actual {
+			actual[i].Data = testutil.NormalizeNewlines(a.Data)
+		}
+
 		wanted := []sheaf.BundleManifest{
 			{
 				ID:   filepath.Join(manifestDir, "deploy.yaml"),

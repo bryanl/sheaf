@@ -7,6 +7,7 @@
 package testutil
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -54,7 +55,16 @@ func WithBundleDir(t *testing.T, fn func(dir string)) {
 func SlurpData(t *testing.T, source string) []byte {
 	data, err := ioutil.ReadFile(source)
 	require.NoError(t, err)
-	return data
+	return NormalizeNewlines(data)
+}
+
+// NormalizeNewlines converts newline conventions for mac and windows with their unix equivalent
+func NormalizeNewlines(d []byte) []byte {
+	// replace CR LF \r\n (windows) with LF \n (unix)
+	d = bytes.Replace(d, []byte{'\r', '\n'}, []byte{'\n'}, -1)
+	// replace CF \r (mac) with LF \n (unix)
+	d = bytes.Replace(d, []byte{'\r'}, []byte{'\n'}, -1)
+	return d
 }
 
 // BundleGeneratorOption is a functional option for configuring BundleGenerator.
