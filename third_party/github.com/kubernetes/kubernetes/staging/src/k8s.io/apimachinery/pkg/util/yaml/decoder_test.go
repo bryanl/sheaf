@@ -150,11 +150,9 @@ stuff: 1
 	if !s.Scan() {
 		t.Fatalf("should have been able to scan")
 	}
-	t.Logf("scan: %s", s.Text())
 	if !s.Scan() {
 		t.Fatalf("should have been able to scan")
 	}
-	t.Logf("scan: %s", s.Text())
 	if s.Scan() {
 		t.Fatalf("scan should have been done")
 	}

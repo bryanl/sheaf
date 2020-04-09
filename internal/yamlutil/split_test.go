@@ -8,10 +8,10 @@ package yamlutil_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"testing"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/internal/yamlutil"
 	"github.com/stretchr/testify/require"
 )
@@ -133,8 +133,7 @@ func TestSlicerWithLargeFile(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			contents, err := ioutil.ReadFile(filepath.Join("./testdata", tc.inputFile))
-			require.NoError(t, err)
+			contents := testutil.SlurpData(t, filepath.Join("./testdata", tc.inputFile))
 
 			actual, err := yamlutil.Split(contents)
 			if tc.expectedErr == "" {
@@ -151,8 +150,7 @@ func TestSlicerWithLargeFile(t *testing.T) {
 
 			e := []string{}
 			for _, f := range tc.expectedFiles {
-				d, err := ioutil.ReadFile(filepath.Join("./testdata", f))
-				require.NoError(t, err)
+				d := testutil.SlurpData(t, filepath.Join("./testdata", f))
 				e = append(e, string(d))
 			}
 

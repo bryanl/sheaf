@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/manifest"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 	"github.com/pivotal/image-relocation/pkg/image"
@@ -176,8 +177,8 @@ func TestMapContainer(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			updatedManifest := string(newMan)
-			expectedManifest := string(readTestData(tt.expectedPath, t))
+			updatedManifest := string(testutil.NormalizeNewlines(newMan))
+			expectedManifest := string(testutil.NormalizeNewlines(readTestData(tt.expectedPath, t)))
 
 			require.Equal(t, expectedManifest, updatedManifest)
 		})
