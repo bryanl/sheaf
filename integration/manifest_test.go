@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -172,7 +173,7 @@ func Test_sheaf_manifest_show(t *testing.T) {
 				output, err := b.harness.runSheaf(b.dir, args...)
 				require.NoError(t, err)
 
-				require.Equal(t, string(tc.wanted), output.Stdout.String())
+				require.Equal(t, string(testutil.NormalizeNewlines(tc.wanted)), string(testutil.NormalizeNewlines(output.Stdout.Bytes())))
 			})
 
 		})
