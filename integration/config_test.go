@@ -283,7 +283,7 @@ func Test_sheaf_config_get(t *testing.T) {
 }
 
 func Test_sheaf_config_push_and_pull(t *testing.T) {
-	withWorkingDirectory(t, func(options wdOptions) {
+	withWorkingDirectoryAndMaybeRegistry(t, func(options wdOptions) {
 
 		b := sheafInit(t, testHarness, "integration", options.dir)
 

@@ -58,7 +58,22 @@ jobs:
       - name: Run tests
         env:
           REGISTRY: localhost:${{ job.services.registry.ports['5000'] }}
-        run: go test -tags=integration -v ./... -count=1
+        run: go test -tags=integration ./... -count=1
+
+  integration-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Install Go
+        if: success()
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14.x
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Run tests
+        env:
+          REGISTRY_UNAVAILABLE: true
+        run: go test -tags=integration ./... -count=1
 
   coverage:
     runs-on: ubuntu-latest

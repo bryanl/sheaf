@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 )
 
 type harness struct {
@@ -22,7 +23,6 @@ type harness struct {
 func newRunner(buildDir string) (*harness, error) {
 	r := harness{
 		buildDir: buildDir,
-		sheafBin: filepath.Join(buildDir, "sheaf"),
 	}
 
 	if err := r.buildSheaf(); err != nil {
@@ -33,6 +33,12 @@ func newRunner(buildDir string) (*harness, error) {
 }
 
 func (r *harness) buildSheaf() error {
+	if runtime.GOOS == "windows" {
+		r.sheafBin = filepath.Join(r.buildDir, "sheaf.exe")
+	} else {
+		r.sheafBin = filepath.Join(r.buildDir, "sheaf")
+	}
+
 	args := []string{
 		"build",
 		"-o", r.sheafBin,
@@ -48,7 +54,6 @@ func (r *harness) buildSheaf() error {
 		return err
 	}
 
-	r.sheafBin = filepath.Join(r.buildDir, "sheaf")
 	return nil
 }
 

@@ -31,6 +31,27 @@ func withWorkingDirectory(t *testing.T, fn func(options wdOptions)) {
 		}
 	})
 
+	options := wdOptions{
+		dir: workingDirectory,
+	}
+
+	fn(options)
+}
+
+func withWorkingDirectoryAndMaybeRegistry(t *testing.T, fn func(options wdOptions)) {
+	// If no registry is available, skip the test.
+	if os.Getenv("REGISTRY_UNAVAILABLE") != "" {
+		return
+	}
+	workingDirectory, err := ioutil.TempDir("", "sheaf-test")
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		if workingDirectory != "" {
+			require.NoError(t, os.RemoveAll(workingDirectory))
+		}
+	})
+
 	registry := os.Getenv("REGISTRY")
 
 	if registry == "" {

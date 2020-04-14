@@ -19,6 +19,7 @@ import (
 	"github.com/pivotal/image-relocation/pkg/pathmapping"
 	"github.com/stretchr/testify/require"
 
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
 
@@ -47,7 +48,7 @@ func Test_sheaf_archive_pack(t *testing.T) {
 }
 
 func Test_sheaf_archive_push(t *testing.T) {
-	withWorkingDirectory(t, func(options wdOptions) {
+	withWorkingDirectoryAndMaybeRegistry(t, func(options wdOptions) {
 		b := sheafInit(t, testHarness, "integration", options.dir)
 
 		_, err := b.harness.runSheaf(b.dir, "manifest", "add",
@@ -82,7 +83,7 @@ func Test_sheaf_archive_push(t *testing.T) {
 }
 
 func Test_sheaf_archive_relocate(t *testing.T) {
-	withWorkingDirectory(t, func(options wdOptions) {
+	withWorkingDirectoryAndMaybeRegistry(t, func(options wdOptions) {
 		b := sheafInit(t, testHarness, "integration", options.dir)
 
 		_, err := b.harness.runSheaf(b.dir, "manifest", "add",
@@ -174,8 +175,7 @@ func Test_sheaf_archive_show_manifests(t *testing.T) {
 				output, err := b.harness.runSheaf(b.dir, args...)
 				require.NoError(t, err)
 
-				require.Equal(t, string(tc.wanted), output.Stdout.String())
-
+				require.Equal(t, string(testutil.NormalizeNewlines(tc.wanted)), string(testutil.NormalizeNewlines(output.Stdout.Bytes())))
 			})
 
 		})
