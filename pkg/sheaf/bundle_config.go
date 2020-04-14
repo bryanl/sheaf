@@ -8,8 +8,6 @@ package sheaf
 
 import (
 	"io"
-
-	"github.com/pivotal/image-relocation/pkg/images"
 )
 
 //go:generate mockgen -destination=../mocks/mock_bundle_config.go -package mocks github.com/bryanl/sheaf/pkg/sheaf BundleConfig
@@ -32,9 +30,6 @@ type BundleConfig interface {
 	SetName(string)
 	GetVersion() string
 	SetVersion(string)
-	// TODO: these could be string slices. push the images.* to the implementation
-	GetImages() *images.Set
-	SetImages(*images.Set)
 	GetUserDefinedImages() []UserDefinedImage
 	SetUserDefinedImages([]UserDefinedImage)
 }

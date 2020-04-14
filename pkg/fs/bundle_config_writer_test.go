@@ -15,7 +15,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/pivotal/image-relocation/pkg/images"
 	"github.com/stretchr/testify/require"
 
 	"github.com/bryanl/sheaf/internal/testutil"
@@ -34,19 +33,15 @@ func TestBundleConfigWriter_Write(t *testing.T) {
 		{
 			name: "in general",
 			config: func(controller *gomock.Controller) *mocks.MockBundleConfig {
-				imageList, err := images.New("foo")
-				require.NoError(t, err)
-
 				config := mocks.NewMockBundleConfig(controller)
 				config.EXPECT().GetSchemaVersion().Return("v1alpha1")
 				config.EXPECT().GetName().Return("test")
 				config.EXPECT().GetVersion().Return("0.1.0")
-				config.EXPECT().GetImages().Return(&imageList)
 				config.EXPECT().GetUserDefinedImages().Return([]sheaf.UserDefinedImage{
 					{
 						APIVersion: "v1",
 						Kind:       "Item",
-						JSONPath:   "{.}",
+						JSONPath:   ".",
 					},
 				})
 
@@ -61,12 +56,11 @@ func TestBundleConfigWriter_Write(t *testing.T) {
 				config.EXPECT().GetSchemaVersion().Return("v1alpha1")
 				config.EXPECT().GetName().Return("test")
 				config.EXPECT().GetVersion().Return("0.1.0")
-				config.EXPECT().GetImages().Return(&images.Empty)
 				config.EXPECT().GetUserDefinedImages().Return([]sheaf.UserDefinedImage{
 					{
 						APIVersion: "v1",
 						Kind:       "Item",
-						JSONPath:   "{.}",
+						JSONPath:   ".",
 					},
 				})
 
@@ -77,14 +71,10 @@ func TestBundleConfigWriter_Write(t *testing.T) {
 		{
 			name: "without user defined images",
 			config: func(controller *gomock.Controller) *mocks.MockBundleConfig {
-				imageList, err := images.New("foo")
-				require.NoError(t, err)
-
 				config := mocks.NewMockBundleConfig(controller)
 				config.EXPECT().GetSchemaVersion().Return("v1alpha1")
 				config.EXPECT().GetName().Return("test")
 				config.EXPECT().GetVersion().Return("0.1.0")
-				config.EXPECT().GetImages().Return(&imageList)
 				config.EXPECT().GetUserDefinedImages().Return(nil)
 
 				return config

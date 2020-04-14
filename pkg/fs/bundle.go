@@ -184,27 +184,18 @@ func genManifestDir(rootPath string) string {
 
 // Images returns images in the fs.
 func (b *Bundle) Images() (images.Set, error) {
-	seen := images.Empty
-
 	config := b.Config()
-	bundleImages := images.Empty
-	if imageSet := config.GetImages(); imageSet != nil {
-		bundleImages = *imageSet
-	}
-	printImageTree(sheaf.BundleConfigFilename, bundleImages.Strings(), b.reporter)
-
-	seen = seen.Union(bundleImages)
 
 	m, err := b.Manifests()
 	if err != nil {
 		return images.Empty, err
 	}
-
 	bundleManifests, err := m.List()
 	if err != nil {
 		return images.Empty, err
 	}
 
+	seen := images.Empty
 	for _, bundleManifest := range bundleManifests {
 
 		list, err := manifest.ContainerImages(bundleManifest.ID, config.GetUserDefinedImages())

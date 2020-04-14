@@ -7,7 +7,6 @@ package mocks
 import (
 	sheaf "github.com/bryanl/sheaf/pkg/sheaf"
 	gomock "github.com/golang/mock/gomock"
-	images "github.com/pivotal/image-relocation/pkg/images"
 	reflect "reflect"
 )
 
@@ -32,20 +31,6 @@ func NewMockBundleConfig(ctrl *gomock.Controller) *MockBundleConfig {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockBundleConfig) EXPECT() *MockBundleConfigMockRecorder {
 	return m.recorder
-}
-
-// GetImages mocks base method
-func (m *MockBundleConfig) GetImages() *images.Set {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetImages")
-	ret0, _ := ret[0].(*images.Set)
-	return ret0
-}
-
-// GetImages indicates an expected call of GetImages
-func (mr *MockBundleConfigMockRecorder) GetImages() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImages", reflect.TypeOf((*MockBundleConfig)(nil).GetImages))
 }
 
 // GetName mocks base method
@@ -102,18 +87,6 @@ func (m *MockBundleConfig) GetVersion() string {
 func (mr *MockBundleConfigMockRecorder) GetVersion() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersion", reflect.TypeOf((*MockBundleConfig)(nil).GetVersion))
-}
-
-// SetImages mocks base method
-func (m *MockBundleConfig) SetImages(arg0 *images.Set) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetImages", arg0)
-}
-
-// SetImages indicates an expected call of SetImages
-func (mr *MockBundleConfigMockRecorder) SetImages(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetImages", reflect.TypeOf((*MockBundleConfig)(nil).SetImages), arg0)
 }
 
 // SetName mocks base method

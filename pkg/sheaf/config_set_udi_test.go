@@ -179,3 +179,19 @@ func TestConfigSetUDI(t *testing.T) {
 		})
 	}
 }
+
+func successfulConfigWriter(controller *gomock.Controller) *mocks.MockBundleConfigWriter {
+	bcw := mocks.NewMockBundleConfigWriter(controller)
+	bcw.EXPECT().Write(gomock.Any(), gomock.Any()).Return(nil)
+	return bcw
+}
+
+func errorConfigWriter(controller *gomock.Controller) *mocks.MockBundleConfigWriter {
+	bcw := mocks.NewMockBundleConfigWriter(controller)
+	bcw.EXPECT().Write(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+	return bcw
+}
+
+func noopConfigWriter(controller *gomock.Controller) *mocks.MockBundleConfigWriter {
+	return mocks.NewMockBundleConfigWriter(controller)
+}

@@ -89,15 +89,6 @@ sheaf config set-udi --bundle-path project-path \
 When `sheaf` is building a bundle archive or generating manifests, it will use the user defined mappings.
 
 
-### Add Extra Images to Bundle
-
-This is only necessary for images that `sheaf` can't find by scanning manifests, but it won't
-do any harm if you add an image that can be found.
-
-Repeat the following for each image (or pass multiple `-i` switches):
-
-`sheaf config add-image <bundle directory> -i <image>`
-
 ## Finding images
 
 There are myriad ways to specify an image in a manifest. `sheaf` can detect images defined in pod specs that are in

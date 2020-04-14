@@ -32,7 +32,6 @@ require (
 	golang.org/x/tools v0.0.0-20200204192400-7124308813f3 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
-	k8s.io/apimachinery v0.17.3-beta.0
 	k8s.io/client-go v0.0.0-20200131194156-19522ff28802
 	k8s.io/klog v1.0.0
 	sigs.k8s.io/yaml v1.1.0
