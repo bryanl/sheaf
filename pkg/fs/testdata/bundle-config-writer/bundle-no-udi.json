@@ -1,8 +1,5 @@
 {
   "schemaVersion": "v1alpha1",
   "name": "test",
-  "version": "0.1.0",
-  "images": [
-    "docker.io/library/foo"
-  ]
+  "version": "0.1.0"
 }

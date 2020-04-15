@@ -65,7 +65,7 @@ Relocate the images located in the archive to a registry repository with `<prefi
 Generate manifests stored in the archive to stdout. If `<prefix>` is specified, the images in the manifests will be
 rewritten to the prefixed location. 
 
-### Create user defined images.
+### Create user defined images
 
 With Custom Resource Definitions, it is possible to define locations that `sheaf` cannot detect automatically. `sheaf`
 allows the user to create user defined images. For example, if you have a custom resource with API version
@@ -89,15 +89,6 @@ sheaf config set-udi --bundle-path project-path \
 When `sheaf` is building a bundle archive or generating manifests, it will use the user defined mappings.
 
 
-### Add Extra Images to Bundle
-
-This is only necessary for images that `sheaf` can't find by scanning manifests, but it won't
-do any harm if you add an image that can be found.
-
-Repeat the following for each image (or pass multiple `-i` switches):
-
-`sheaf config add-image <bundle directory> -i <image>`
-
 ## Finding images
 
 There are myriad ways to specify an image in a manifest. `sheaf` can detect images defined in pod specs that are in
@@ -107,25 +98,12 @@ has a method called "user defined images", that allows custom locations to be cr
 
 Example:
 
-```json
-{
-    "name": "knative-serving-0.12",
-    "version": "0.1.0",
-    "schemaVersion": "v1alpha1",
-    "images": [],
-    "userDefinedImages": [
-        {
-            "apiVersion": "caching.internal.knative.dev/v1alpha1",
-            "kind": "Image",
-            "jsonPath": "{.spec.image}",
-            "type": "single"
-        }
-    ]
-}
+```sh
+sheaf config set-udi --bundle-path project-path --api-version caching.internal.knative.dev/v1alpha1 --kind Image --json-path '.spec.image'
 ```
  
 In this case, when `sheaf` is parsing the `Image` kind API version `caching.internal.knative.dev/v1alpha1` it will
-use the JSON path `{.spec.image}` to locate an image. 
+use the JSON path `.spec.image` to locate an image. In this case:
 
 ```yaml
 ---
@@ -140,15 +118,8 @@ spec:
   image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:3932262d4a44284f142f4c49f707526e70dd86317163a88a8cbb6de035a401a9
 ```
 
-In this case `gcr.io/knative-releases/...` will be identified as an image. There is also a mechanism to find multiple 
-images at the same time. If the `userDefinedImage` type is "multiple", then the output from the JSON path should be 
-a comma separated value.   
+sheaf will identify `gcr.io/knative-releases/...` as an image.
 
-Examples of JSON path queries for multiple values:
-* `{range .spec.images[*]}{@}{','}{end}`: Looks for an array of images in `.spec.images`
-* `{range ..spec.containers[*]}{.image}{','}{end}`: This is the method that `sheaf` uses to find images in a Pod spec
-template
-
-## Notices/Limitations:
-
-* Detected images are replaced everywhere in your document in order to preserve comments.
+Examples of JSON path queries:
+* `.spec.images[*]`: Looks for an array of images in `.spec.images`
+* `..spec.containers[*].image`: This is the method that `sheaf` uses to find images in a Pod spec template

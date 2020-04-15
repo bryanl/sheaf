@@ -9,7 +9,6 @@ package option
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -196,15 +195,11 @@ func (g Generator) WithUserDefinedImage() {
 	g.stringFlag("api-version", "", "api version")
 	g.stringFlag("kind", "", "kind")
 	g.stringFlag("json-path", "", "json path")
-	g.stringFlag("type", string(sheaf.SingleResult),
-		fmt.Sprintf("type of user defined image (valid types: %s)",
-			strings.Join(sheaf.UserDefinedImageTypes, ",")))
 	g.setOptions("udi", func() []sheaf.Option {
 		udi := sheaf.UserDefinedImage{
 			APIVersion: viper.GetString(g.flagName("api-version")),
 			Kind:       viper.GetString(g.flagName("kind")),
 			JSONPath:   viper.GetString(g.flagName("json-path")),
-			Type:       sheaf.UserDefinedImageType(viper.GetString(g.flagName("type"))),
 		}
 
 		return []sheaf.Option{

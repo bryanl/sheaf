@@ -31,19 +31,16 @@ func TestConfigSetUDI(t *testing.T) {
 		APIVersion: "v1",
 		Kind:       "Kind1",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 	udi2 := sheaf.UserDefinedImage{
 		APIVersion: "v2",
 		Kind:       "Kind1",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 	udi3 := sheaf.UserDefinedImage{
 		APIVersion: "v1",
 		Kind:       "Kind2",
 		JSONPath:   "{.}",
-		Type:       sheaf.SingleResult,
 	}
 
 	cases := []struct {
@@ -181,4 +178,20 @@ func TestConfigSetUDI(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func successfulConfigWriter(controller *gomock.Controller) *mocks.MockBundleConfigWriter {
+	bcw := mocks.NewMockBundleConfigWriter(controller)
+	bcw.EXPECT().Write(gomock.Any(), gomock.Any()).Return(nil)
+	return bcw
+}
+
+func errorConfigWriter(controller *gomock.Controller) *mocks.MockBundleConfigWriter {
+	bcw := mocks.NewMockBundleConfigWriter(controller)
+	bcw.EXPECT().Write(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+	return bcw
+}
+
+func noopConfigWriter(controller *gomock.Controller) *mocks.MockBundleConfigWriter {
+	return mocks.NewMockBundleConfigWriter(controller)
 }

@@ -9,14 +9,15 @@ package manifest
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/client-go/util/jsonpath"
+	"gopkg.in/yaml.v3"
 
+	"github.com/bryanl/sheaf/internal/yamlutil"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/glyn/go-yamlpath/pkg/yamlpath"
+	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/images"
 )
 
@@ -30,7 +31,7 @@ func ContainerImagesFromBytes(data []byte, userDefinedImages []sheaf.UserDefined
 	}
 
 	for _, doc := range docs {
-		results, err := jsonPathMultiSearch(doc, "{range ..spec.containers[*]}{.image}{','}{end}")
+		results, err := jsonPathSearch(doc, "..spec.containers[*].image")
 		if err != nil {
 			return images.Empty, fmt.Errorf("json path search: %w", err)
 		}
@@ -42,38 +43,22 @@ func ContainerImagesFromBytes(data []byte, userDefinedImages []sheaf.UserDefined
 		set = set.Union(bufImages)
 
 		for _, udi := range userDefinedImages {
-			if !(doc["apiVersion"] == udi.APIVersion && doc["kind"] == udi.Kind) {
+			var d map[string]interface{}
+			if err := doc.Decode(&d); err != nil {
+				return images.Empty, fmt.Errorf("YAML decode: %w", err)
+			}
+			if !(d["apiVersion"] == udi.APIVersion && d["kind"] == udi.Kind) {
 				continue
 			}
 
-			var bufImages images.Set
-			switch udi.Type {
-			case sheaf.SingleResult:
-				result, err := jsonPathSearch(doc, udi.JSONPath)
-				if err != nil {
-					return images.Empty, fmt.Errorf("user defined image search %q: %w", udi.JSONPath, err)
-				}
+			result, err := jsonPathSearch(doc, udi.JSONPath)
+			if err != nil {
+				return images.Empty, fmt.Errorf("user defined image search %q: %w", udi.JSONPath, err)
+			}
 
-				bufImages, err = images.New(result)
-				if err != nil {
-					return images.Empty, err
-				}
-			case sheaf.MultiResult:
-				results, err := jsonPathMultiSearch(doc, udi.JSONPath)
-				if err != nil {
-					return images.Empty, fmt.Errorf("user defined image search %q: %w", udi.JSONPath, err)
-				}
-
-				if results == nil {
-					results = []string{}
-				}
-
-				bufImages, err = images.New(results...)
-				if err != nil {
-					return images.Empty, err
-				}
-			default:
-				return images.Empty, fmt.Errorf("user defined image type %q is invalid", udi.Type)
+			bufImages, err := images.New(result...)
+			if err != nil {
+				return images.Empty, err
 			}
 
 			set = set.Union(bufImages)
@@ -100,65 +85,122 @@ func ContainerImages(manifestPath string, definedImages []sheaf.UserDefinedImage
 	return imagesSet, nil
 }
 
-func filterEmpty(ss []string) []string {
-	var result []string
-	for _, s := range ss {
-		if s != "" {
-			result = append(result, s)
+// MapContainer applies the mapping to the images in the input manifest and returns the modified manifest
+func MapContainer(manifest []byte, userDefinedImages []sheaf.UserDefinedImage, mapping func(originalImage image.Name) (image.Name, error)) ([]byte, error) {
+	refMapping := func(originalImage string) (string, error) {
+		i, err := image.NewName(originalImage)
+		if err != nil {
+			return "", err
 		}
+		mappedImage, err := mapping(i)
+		if err != nil {
+			return "", err
+		}
+		return mappedImage.String(), nil
 	}
-	return result
+
+	docs, err := manifestDocuments(manifest)
+	if err != nil {
+		return nil, fmt.Errorf("read documents: %w", err)
+	}
+
+	newDocs := []string{}
+	for _, doc := range docs {
+		// Skip empty documents
+		if doc.Content == nil {
+			continue
+		}
+		imageNodes, err := jsonPathSearchNodes(doc, "..spec.containers[*].image")
+		if err != nil {
+			return nil, fmt.Errorf("json path search: %w", err)
+		}
+
+		for _, i := range imageNodes {
+			newValue, err := refMapping(i.Value)
+			if err != nil {
+				return nil, fmt.Errorf("failed to map image: %w", err)
+			}
+			i.Value = newValue
+		}
+
+		for _, udi := range userDefinedImages {
+			var d map[string]interface{}
+			if err := doc.Decode(&d); err != nil {
+				return nil, fmt.Errorf("YAML decode: %w", err)
+			}
+			if !(d["apiVersion"] == udi.APIVersion && d["kind"] == udi.Kind) {
+				continue
+			}
+
+			imageNodes, err := jsonPathSearchNodes(doc, udi.JSONPath)
+			if err != nil {
+				return nil, fmt.Errorf("user defined image search %q: %w", udi.JSONPath, err)
+			}
+
+			for _, i := range imageNodes {
+				newValue, err := refMapping(i.Value)
+				if err != nil {
+					return nil, fmt.Errorf("failed to map image: %w", err)
+				}
+				i.Value = newValue
+			}
+		}
+
+		var buf bytes.Buffer
+		e := yaml.NewEncoder(&buf)
+		e.SetIndent(2)
+
+		err = e.Encode(doc)
+		if err != nil {
+			return nil, fmt.Errorf("cannot marshal node %#v: %w", doc, err)
+		}
+		e.Close()
+
+		newDocs = append(newDocs, buf.String())
+	}
+
+	return []byte(strings.Join(newDocs, "\n---\n")), nil // add leading newline since splitting can drop newlines
 }
 
-func jsonPathSearch(doc map[string]interface{}, query string) (string, error) {
-	j := jsonpath.New("parser")
-	if err := j.Parse(query); err != nil {
-		return "", fmt.Errorf("unable to parse: %w", err)
-	}
-
-	var buf bytes.Buffer
-	if err := j.Execute(&buf, doc); err != nil {
-		// jsonpath doesn't return a helpful error, so look at the error message string.
-		if strings.Contains(err.Error(), "is not found") {
-			return "", nil
-		}
-		return "", fmt.Errorf("search manifest for containers: %w", err)
-	}
-
-	return buf.String(), nil
-}
-
-func jsonPathMultiSearch(doc map[string]interface{}, query string) ([]string, error) {
-	result, err := jsonPathSearch(doc, query)
+func jsonPathSearch(doc *yaml.Node, query string) ([]string, error) {
+	imageNodes, err := jsonPathSearchNodes(doc, query)
 	if err != nil {
 		return nil, err
 	}
 
-	if result == "" {
-		return nil, nil
+	result := []string{}
+	for _, imageNode := range imageNodes {
+		result = append(result, imageNode.Value)
 	}
 
-	return filterEmpty(strings.Split(result, ",")), nil
+	return result, nil
 }
 
-func manifestDocuments(in []byte) ([]map[string]interface{}, error) {
-	r := bytes.NewReader(in)
-	decoder := yaml.NewYAMLOrJSONDecoder(r, 4096)
-
-	var list []map[string]interface{}
-
-	for {
-		var m map[string]interface{}
-		if err := decoder.Decode(&m); err != nil {
-			if err == io.EOF {
-				break
-			}
-
-			return nil, fmt.Errorf("decode failed: %w", err)
-		}
-
-		list = append(list, m)
+func jsonPathSearchNodes(doc *yaml.Node, query string) ([]*yaml.Node, error) {
+	p, err := yamlpath.NewPath(query)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse query: %w", err)
 	}
 
-	return list, nil
+	return p.Find(doc), nil
+}
+
+func manifestDocuments(in []byte) ([]*yaml.Node, error) {
+	docs, err := yamlutil.Split(in)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := []*yaml.Node{}
+	for _, doc := range docs {
+		var n yaml.Node
+		err := yaml.Unmarshal(doc, &n)
+		if err != nil {
+			return nil, err
+		}
+
+		nodes = append(nodes, &n)
+	}
+
+	return nodes, nil
 }

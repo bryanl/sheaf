@@ -1,3 +1,4 @@
+# Source: cert-manager/templates/cainjector-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,7 +31,7 @@ spec:
             serviceAccountName: cert-manager-cainjector
             containers:
               - name: cert-manager
-                image: "example.com/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a"
+                image: "quay.io/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a"
                 imagePullPolicy: IfNotPresent
                 args:
                   - --v=2

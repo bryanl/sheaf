@@ -30,15 +30,14 @@ var UserDefinedImageTypes = []string{string(MultiResult), string(SingleResult)}
 // UserDefinedImage is a user defined image. These allow sheaf to find more
 // images.
 type UserDefinedImage struct {
-	APIVersion string               `json:"apiVersion"`
-	Kind       string               `json:"kind"`
-	JSONPath   string               `json:"jsonPath"`
-	Type       UserDefinedImageType `json:"type"`
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	JSONPath   string `json:"jsonPath"`
 }
 
 // Validate validates a user defined image.
 func (udi UserDefinedImage) Validate() error {
-	var apiVersionErr, kindErr, jsonPathErr, typeErr error
+	var apiVersionErr, kindErr, jsonPathErr error
 
 	if udi.APIVersion == "" {
 		apiVersionErr = fmt.Errorf("api version is blank")
@@ -57,23 +56,7 @@ func (udi UserDefinedImage) Validate() error {
 		}
 	}
 
-	if udi.Type == "" {
-		typeErr = fmt.Errorf("type is blank")
-	} else if !udiContains(udi.Type, []UserDefinedImageType{SingleResult, MultiResult}) {
-		typeErr = fmt.Errorf("unknown type %s", udi.Type)
-	}
-
-	return multierr.Combine(apiVersionErr, kindErr, jsonPathErr, typeErr)
-}
-
-func udiContains(udi UserDefinedImageType, list []UserDefinedImageType) bool {
-	for i := range list {
-		if udi == list[i] {
-			return true
-		}
-	}
-
-	return false
+	return multierr.Combine(apiVersionErr, kindErr, jsonPathErr)
 }
 
 // UserDefinedImageKey is a key describing a UserDefinedImage.

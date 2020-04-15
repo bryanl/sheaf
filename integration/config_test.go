@@ -16,98 +16,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/pivotal/image-relocation/pkg/images"
-
 	"github.com/bryanl/sheaf/pkg/sheaf"
 )
-
-func Test_sheaf_config_add_image(t *testing.T) {
-	cases := []struct {
-		name    string
-		initial []string
-		images  []string
-		wanted  []string
-	}{
-		{
-			name: "add image",
-			images: []string{
-				"bryanl/slim-hello-world:v1",
-			},
-			wanted: []string{"docker.io/bryanl/slim-hello-world:v1"},
-		},
-		{
-			name: "add multiple images",
-			images: []string{
-				"bryanl/slim-hello-world:v2",
-				"bryanl/slim-hello-world:v1",
-			},
-			wanted: []string{
-				"docker.io/bryanl/slim-hello-world:v1",
-				"docker.io/bryanl/slim-hello-world:v2",
-			},
-		},
-		{
-			name: "with an existing image",
-			initial: []string{
-				"docker.io/bryanl/slim-hello-world:v2",
-			},
-			images: []string{
-				"bryanl/slim-hello-world:v1",
-			},
-			wanted: []string{
-				"docker.io/bryanl/slim-hello-world:v1",
-				"docker.io/bryanl/slim-hello-world:v2",
-			},
-		},
-		{
-			name: "duplicate existing image",
-			initial: []string{
-				"docker.io/bryanl/slim-hello-world:v1",
-			},
-			images: []string{
-				"bryanl/slim-hello-world:v1",
-			},
-			wanted: []string{
-				"docker.io/bryanl/slim-hello-world:v1",
-			},
-		},
-		{
-			name:   "no image",
-			wanted: nil,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			withWorkingDirectory(t, func(options wdOptions) {
-				b := sheafInit(t, testHarness, "integration", options.dir)
-
-				b.updateConfig(func(config sheaf.BundleConfig) {
-					list, err := images.New(tc.initial...)
-					require.NoError(t, err)
-					config.SetImages(&list)
-				})
-
-				args := []string{"config", "add-image"}
-				for i := range tc.images {
-					args = append(args, "-i", tc.images[i])
-				}
-
-				_, err := b.harness.runSheaf(b.dir, args...)
-				require.NoError(t, err)
-
-				config := b.readConfig()
-
-				var actual []string
-				if imageSet := config.GetImages(); imageSet != nil {
-					actual = imageSet.Strings()
-				}
-
-				require.Equal(t, tc.wanted, actual)
-			})
-		})
-	}
-}
 
 func Test_sheaf_config_set_udi(t *testing.T) {
 
@@ -129,7 +39,6 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 					APIVersion: "example.com/v1",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.image}",
-					Type:       sheaf.SingleResult,
 				},
 			},
 		},
@@ -140,7 +49,6 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 					APIVersion: "example.com/v2",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.image}",
-					Type:       sheaf.SingleResult,
 				},
 			},
 			udi: udi{
@@ -153,13 +61,11 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 					APIVersion: "example.com/v1",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.image}",
-					Type:       sheaf.SingleResult,
 				},
 				{
 					APIVersion: "example.com/v2",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.image}",
-					Type:       sheaf.SingleResult,
 				},
 			},
 		},
@@ -170,21 +76,18 @@ func Test_sheaf_config_set_udi(t *testing.T) {
 					APIVersion: "example.com/v1",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.image}",
-					Type:       sheaf.SingleResult,
 				},
 			},
 			udi: udi{
 				APIVersion: "example.com/v1",
 				Kind:       "Resource",
 				JSONPath:   "{.spec.images}",
-				Type:       "multiple",
 			},
 			wanted: []sheaf.UserDefinedImage{
 				{
 					APIVersion: "example.com/v1",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.images}",
-					Type:       sheaf.MultiResult,
 				},
 			},
 		},
@@ -226,7 +129,6 @@ func Test_sheaf_config_delete_udi(t *testing.T) {
 					APIVersion: "example.com/v1",
 					Kind:       "Resource",
 					JSONPath:   "{.spec.image}",
-					Type:       sheaf.SingleResult,
 				},
 			},
 			id: udiID{

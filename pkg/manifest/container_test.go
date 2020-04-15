@@ -9,17 +9,19 @@
 package manifest_test
 
 import (
+	"io/ioutil"
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
+	"github.com/bryanl/sheaf/internal/testutil"
 	"github.com/bryanl/sheaf/pkg/manifest"
 	"github.com/bryanl/sheaf/pkg/sheaf"
+	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/images"
+	"github.com/stretchr/testify/require"
 )
 
-func TestContainers(t *testing.T) {
+func TestContainerImages(t *testing.T) {
 	tests := []struct {
 		name              string
 		path              string
@@ -72,8 +74,7 @@ func TestContainers(t *testing.T) {
 				{
 					APIVersion: "caching.internal.knative.dev/v1alpha1",
 					Kind:       "Image",
-					JSONPath:   "{.spec.image}",
-					Type:       "single",
+					JSONPath:   ".spec.image",
 				},
 			},
 			expected: []string{
@@ -87,8 +88,7 @@ func TestContainers(t *testing.T) {
 				{
 					APIVersion: "example.dev/v1",
 					Kind:       "Foo",
-					JSONPath:   "{range .spec.images[*]}{@}{','}{end}",
-					Type:       "multiple",
+					JSONPath:   ".spec.images[*]",
 				},
 			},
 			expected: []string{
@@ -104,7 +104,6 @@ func TestContainers(t *testing.T) {
 					APIVersion: "caching.internal.knative.dev/v1alpha1",
 					Kind:       "Image",
 					JSONPath:   "{.spec.image}",
-					Type:       "invalid",
 				},
 			},
 			wantErr: true,
@@ -127,4 +126,68 @@ func TestContainers(t *testing.T) {
 			require.Equal(t, expected, got)
 		})
 	}
+}
+
+func TestMapContainer(t *testing.T) {
+	tests := []struct {
+		name         string
+		path         string
+		mapping      map[string]string
+		expectedPath string
+	}{
+		{
+			name:         "deployment",
+			path:         "deployment.yaml",
+			mapping:      map[string]string{"nginx:1.7.9": "example.com/nginx:1.7.9"},
+			expectedPath: "deployment-replaced.yaml",
+		},
+		{
+			name:         "synonym",
+			path:         "deployment-synonym.yaml",
+			mapping:      map[string]string{"nginx:1.7.9": "example.com/nginx:1.7.9"},
+			expectedPath: "deployment-replaced.yaml",
+		},
+		{
+			name:         "quoted",
+			path:         "quoted.yaml",
+			mapping:      map[string]string{"quay.io/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a": "example.com/jetstack/cert-manager-cainjector@sha256:9ff6923f6c567573103816796df283d03256bc7a9edb7450542e106b349cf34a"},
+			expectedPath: "quoted-replaced.yaml",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			man := readTestData(tt.path, t)
+
+			mapping := map[image.Name]image.Name{}
+			for old, new := range tt.mapping {
+				oldName, err := image.NewName(old)
+				require.NoError(t, err)
+
+				newName, err := image.NewName(new)
+				require.NoError(t, err)
+
+				mapping[oldName] = newName
+			}
+
+			newMan, err := manifest.MapContainer(man, nil, func(originalImage image.Name) (image.Name, error) {
+				newImage, ok := mapping[originalImage]
+				require.True(t, ok)
+				return newImage, nil
+			})
+			require.NoError(t, err)
+
+			updatedManifest := string(testutil.NormalizeNewlines(newMan))
+			expectedManifest := string(testutil.NormalizeNewlines(readTestData(tt.expectedPath, t)))
+
+			require.Equal(t, expectedManifest, updatedManifest)
+		})
+	}
+}
+
+func readTestData(filename string, t *testing.T) []byte {
+	path := filepath.Join("testdata", filename)
+	data, err := ioutil.ReadFile(path)
+	require.NoError(t, err)
+	return data
 }
