@@ -3,7 +3,7 @@
 Manages bundles of Kubernetes components.
 
 `sheaf` is a tool that can create a `bundle` of Kubernetes components. It can generate an archive from the bundle
-that can be distributed for use in Kubernetes clusters. The initial idea was inspired by inspired by 
+that can be distributed for use in Kubernetes clusters. The initial idea was inspired by
 [CNAB](https://cnab.io/). It answers the question: _how can I distribute Kubernetes manifests with their 
 associated images_?
 
@@ -31,7 +31,7 @@ Features:
 ### Initialize Bundle
 
 ```sh
-sheaf init <bundle directory>
+sheaf init --bundle-path <bundle directory> --bundle-name <your project name>
 ```
 
 Initialize a sheaf project:
@@ -44,23 +44,24 @@ Initialize a sheaf project:
 
 Repeat the following for each manifest (or pass multiple `-f` switches):
 
-`sheaf manifest add <bundle directory> -f <manifest path or URL>`
+`sheaf manifest add --bundle-path <bundle directory> -f <manifest path or URL>`
 
 ### Package Bundle
 
-`sheaf archive pack <bundle directory> <archive path>`
+`sheaf archive pack --bundle-path <bundle directory> --dest <archive output directory>`
 
-Create an archive of `<bundle directory>` with any images found by scanning the manifests together with any listed in `bundle.json`.
+Create an archive of `<bundle directory>` with any images found by scanning the manifests together with any listed in `bundle.json` and output it in the _<archive output directory>_ directory.
+Note that the directory _<archive output directory>_ must exist.
 
 ### Stage Bundle
 
-`sheaf archive reloate <archive path> <prefix>`
+`sheaf archive relocate --archive <archive path> --prefix <prefix>`
 
-Relocate the images located in the archive to a registry repository with `<prefix>`. Images will be renamed.
+Relocate the images located in the archive to a registry repository with `<prefix>`. Images will be renamed and pushed to the new registry.
 
 ### Generate Manifest
 
-`sheaf manifest show <archive path> [--prefix=<prefix>]`
+`sheaf manifest show --bundle-path <bundle directory> [--prefix=<prefix>]`
 
 Generate manifests stored in the archive to stdout. If `<prefix>` is specified, the images in the manifests will be
 rewritten to the prefixed location. 

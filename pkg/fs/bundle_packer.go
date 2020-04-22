@@ -101,7 +101,7 @@ func (bp BundlePacker) Pack(b sheaf.Bundle, dest string, force bool) error {
 		return fmt.Errorf("stage images: %w", err)
 	}
 
-	bp.reporter.Header("Creating archive")
+	bp.reporter.Headerf("Creating archive: %s", dest)
 	if err := bp.archiver.Archive(dir, f); err != nil {
 		return fmt.Errorf("create packed archive: %w", err)
 	}
