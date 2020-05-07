@@ -8,7 +8,7 @@ require (
 	github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492 // indirect
 	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
-	github.com/glyn/go-yamlpath v0.0.0-20200331140555-7e407607846c
+	github.com/glyn/go-yamlpath v0.0.0-20200507152037-b3d35ca052dc
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect

@@ -81,9 +81,8 @@ github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/glyn/go-yamlpath v0.0.0-20200331140555-7e407607846c h1:UrSMV3GhJBU8QBdMdaxHEWpWAQkwegFbFs+JveG4MeA=
-github.com/glyn/go-yamlpath v0.0.0-20200331140555-7e407607846c/go.mod h1:VS5ArJvBri32e87LnxRieUtYkZ9IqmhKB33RbGdqbOg=
-github.com/glyn/go-yamlpath v0.0.0-20200401152515-caf91f58e96e h1:iFItLL6+vJWMQonMgR+oaLUeS8iGff4EvtO5PI5Fo7Y=
+github.com/glyn/go-yamlpath v0.0.0-20200507152037-b3d35ca052dc h1:SV2dvPzv7pR+tVEytzemsPaHi5gBVNBYNi3c2WPYnIU=
+github.com/glyn/go-yamlpath v0.0.0-20200507152037-b3d35ca052dc/go.mod h1:VS5ArJvBri32e87LnxRieUtYkZ9IqmhKB33RbGdqbOg=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9GBnD5lWE=
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
