@@ -103,7 +103,7 @@ func TestContainerImages(t *testing.T) {
 				{
 					APIVersion: "caching.internal.knative.dev/v1alpha1",
 					Kind:       "Image",
-					JSONPath:   "{.spec.image}",
+					JSONPath:   "]",
 				},
 			},
 			wantErr: true,
