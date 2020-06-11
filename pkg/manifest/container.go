@@ -16,9 +16,9 @@ import (
 
 	"github.com/bryanl/sheaf/internal/yamlutil"
 	"github.com/bryanl/sheaf/pkg/sheaf"
-	"github.com/glyn/go-yamlpath/pkg/yamlpath"
 	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pivotal/image-relocation/pkg/images"
+	"github.com/vmware-labs/yaml-jsonpath/pkg/yamlpath"
 )
 
 // ContainerImagesFromBytes returns container images referenced in manifest bytes.
@@ -182,7 +182,7 @@ func jsonPathSearchNodes(doc *yaml.Node, query string) ([]*yaml.Node, error) {
 		return nil, fmt.Errorf("unable to parse query: %w", err)
 	}
 
-	return p.Find(doc), nil
+	return p.Find(doc)
 }
 
 func manifestDocuments(in []byte) ([]*yaml.Node, error) {

@@ -8,7 +8,6 @@ require (
 	github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492 // indirect
 	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
-	github.com/glyn/go-yamlpath v0.0.0-20200507152037-b3d35ca052dc
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect
@@ -25,6 +24,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.1
 	github.com/stretchr/testify v1.5.1
+	github.com/vmware-labs/yaml-jsonpath v0.0.0-20200601152922-422ced76f914
 	go.uber.org/multierr v1.5.0
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
