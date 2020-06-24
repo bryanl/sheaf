@@ -24,7 +24,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.1
 	github.com/stretchr/testify v1.5.1
-	github.com/vmware-labs/yaml-jsonpath v0.0.0-20200601152922-422ced76f914
+	github.com/vmware-labs/yaml-jsonpath v0.0.0-20200624151422-ed2c9c62177a
 	go.uber.org/multierr v1.5.0
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
