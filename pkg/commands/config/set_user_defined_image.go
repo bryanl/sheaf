@@ -22,21 +22,40 @@ func NewSetUserDefinedImage() *cobra.Command {
 
 Syntax
 
-<path> ::= <identity> | <root> <subpath> | <subpath>
-<identity> := ""                                         ; the current node
+<path> ::= <identity> | <root> <subpath> | <subpath> |
+           <undotted child> <subpath>                    ; an undotted child is allowed at the start of a path
+<identity> ::= ""                                        ; the current node
 <root> ::= "$"                                           ; the root node of a document
 <subpath> ::= <identity> | <child> <subpath> |
-              <child> <array access> <subpath> |
+              <array access> <subpath> |
               <recursive descent> <subpath>
 
 <child> ::= <dot child> | <bracket child>
-<dot child> ::= "." <child name> | ".*"                  ; named child or all children
-<bracket child> ::= "['" <child name> "']"               ; named child
+<dot child> ::= "." <dotted child name> | ".*"           ; named child (restricted characters) or all children
+<bracket child> ::= "[" <child names> "]"                ; named children
+<child names> ::= <child name> |
+                  <child name> "," <child names> 
+<undotted child> ::= <dotted child name> |               ; named child (restricted characters)
+                     <dotted child name><array access> | ; array access of named child
+                    "*"                                  ; all children
+                    "*" <array access>                   ; array access of all children
+<child name> ::= "'" <single quoted string> "'" |
+                 '"' <double quoted string> '"'
+<single quoted string> ::= "\'" <single quoted string> | ; escaped single quote
+                           "\\" <single quoted string> | ; escaped backslash
+                           <string without ' or \> <single quoted string> |
+                           ""                            ; empty string
+<double quoted string> ::= '\"' <double quoted string> | ; escaped double quote
+                           '\\' <double quoted string> | ; escaped backslash
+                           <string without " or \> <double quoted string> |
+                           ""                            ; empty string
 
-<recursive descent> ::= ".." <child name>                ; all the descendants named <child name>
+<recursive descent> ::= ".." <dotted child name> |       ; all the descendants named <dotted child name>
+                        ".." <array access>              ; array access of all descendents
 
-<array access> ::= "[" <index> "]" | "[" <filter> "]"    ; zero or more elements of a sequence
+<array access> ::= "[" union "]" | "[" <filter> "]"      ; zero or more elements of a sequence
 
+<union> ::= <index> | <index> "," <union>
 <index> ::= <integer> | <range> | "*"                    ; specific index, range of indices, or all indices
 <range> ::= <integer> ":" <integer> |                    ; start (inclusive) to end (exclusive)
             <integer> ":" <integer> ":" <integer>        ; start (inclusive) to end (exclusive) by step
@@ -44,27 +63,30 @@ Syntax
 <filter> ::= "?(" <filter expr> ")"
 <filter expr> ::= <filter and> |
                   <filter and> "||" <filter expr>        ; disjunction
-<filter and> := <basic filter> |
+<filter and> ::= <basic filter> |
                 <basic filter> "&&" <filter and>         ; conjunction (binds more tightly than ||)
 <basic filter> ::= <filter subpath> |                    ; subpath exists
                    "!" <basic filter> |                  ; negation
-                   <filter term> == <filter term> |      ; equality
-                   <filter term> != <filter term> |      ; inequality
-                   <filter term> > <filter term> |       ; numeric greater than
-                   <filter term> >= <filter term> |      ; numeric greater than or equal to
-                   <filter term> < <filter term> |       ; numeric less than
-                   <filter term> <= <filter term> |      ; numeric less than or equal to
-                   <filter subpath> =~ <regular expr> |  ; subpath value matches regular expression
+                   <filter term> "==" <filter term> |    ; equality
+                   <filter term> "!=" <filter term> |    ; inequality
+                   <filter term> ">" <filter term> |     ; numeric greater than
+                   <filter term> ">=" <filter term> |    ; numeric greater than or equal to
+                   <filter term> "<" <filter term> |     ; numeric less than
+                   <filter term> "<=" <filter term> |    ; numeric less than or equal to
+                   <filter subpath> "=~" <regular expr> |; subpath value matches regular expression
                    "(" <filter expr> ")"                 ; bracketing
 <filter term> ::= "@" <subpath> |                        ; item relative to element being processed
-                  "$" <subpath>                          ; item relative to root node of a document
+                  "@" |                                  ; value of element being processed
+                  "$" <subpath> |                        ; item relative to root node of a document
                   <filter literal>
 <filter subpath> ::= "@" <subpath> |                     ; item, relative to element being processed
                      "$" <subpath>                       ; item, relative to root node of a document
 <filter literal> ::= <integer> |                         ; positive or negative decimal integer
                      <floating point number> |           ; floating point number
-                     "'" <string without '> "'"          ; string enclosed in single quotes
-<regular expr> := "/" <go regex> "/"                     ; Go regular expression with any "/" in the regex escaped as "\/"
+                     "'" <string without '> "'" |        ; string enclosed in single quotes
+                     "true" | "false" |                  ; boolean (must not be quoted)
+                     "null"                              ; null (must not be quoted)
+<regular expr> ::= "/" <go regex> "/"                    ; Go regular expression with any "/" in the regex escaped as "\/"
 
 Go regular expressions are defined here: https://golang.org/pkg/regexp/.
 
